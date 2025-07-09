@@ -5435,6 +5435,7 @@ const defaultArrowOptions = {
     activeOpacity: 0.5, // opacity of arrow when it is being drawn
 };
 
+console.log('test');
 const ChessboardContext = React.createContext(null);
 const useChessboardContext = () => React.use(ChessboardContext);
 function ChessboardProvider({ children, options, }) {

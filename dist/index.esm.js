@@ -5433,6 +5433,7 @@ const defaultArrowOptions = {
     activeOpacity: 0.5, // opacity of arrow when it is being drawn
 };
 
+console.log('test');
 const ChessboardContext = createContext(null);
 const useChessboardContext = () => use(ChessboardContext);
 function ChessboardProvider({ children, options, }) {

@@ -51,7 +51,7 @@ import {
   defaultNumericNotationStyle,
   defaultSquareStyle,
 } from './defaults';
-
+console.log('test');
 type Defined<T> = T extends undefined ? never : T;
 
 type ContextType = {
