@@ -1,11 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { useState } from 'react';
 
-import defaultMeta from '../basic-examples/Default.stories';
-import { Chessboard } from '../../../src';
+import { Chessboard } from '../../src';
 
 const meta: Meta<typeof Chessboard> = {
-  ...defaultMeta,
   title: 'stories/Options/Arrows',
 } satisfies Meta<typeof Chessboard>;
 
@@ -64,6 +62,7 @@ export const Arrows: Story = {
           flexDirection: 'column',
           gap: '1rem',
           alignItems: 'center',
+          width: '50%',
         }}
       >
         <button onClick={generateRandomArrows}>Generate Random Arrows</button>

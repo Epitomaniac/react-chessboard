@@ -51,7 +51,7 @@ import {
   defaultNumericNotationStyle,
   defaultSquareStyle,
 } from './defaults';
-console.log('test');
+
 type Defined<T> = T extends undefined ? never : T;
 
 type ContextType = {
@@ -417,7 +417,7 @@ export function ChessboardProvider({
       if (!allowDrawingArrows) {
         return;
       }
-      console.log('draw function run');
+
       const arrowExistsIndex = internalArrows.findIndex(
         (arrow) =>
           arrow.startSquare === newArrowStartSquare &&
@@ -473,14 +473,15 @@ export function ChessboardProvider({
   );
 
   const clearArrows = useCallback(() => {
-    setInternalArrows([]);
-    setNewArrowStartSquare(null);
-    setNewArrowOverSquare(null);
+    if (clearArrowsOnClick) {
+      setInternalArrows([]);
+      setNewArrowStartSquare(null);
+      setNewArrowOverSquare(null);
+    }
   }, [clearArrowsOnClick]);
 
   const setNewArrowOverSquareWithModifiers = useCallback(
     (square: string, modifiers?: { shiftKey: boolean; ctrlKey: boolean }) => {
-      console.log('set new arrow function run');
       const color = modifiers?.shiftKey
         ? arrowOptions.secondaryColor
         : modifiers?.ctrlKey
