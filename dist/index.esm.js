@@ -5598,11 +5598,9 @@ function ChessboardProvider({ children, options, }) {
         newArrowOverSquare,
     ]);
     const clearArrows = useCallback(() => {
-        if (clearArrowsOnClick) {
-            setInternalArrows([]);
-            setNewArrowStartSquare(null);
-            setNewArrowOverSquare(null);
-        }
+        setInternalArrows([]);
+        setNewArrowStartSquare(null);
+        setNewArrowOverSquare(null);
     }, [clearArrowsOnClick]);
     const setNewArrowOverSquareWithModifiers = useCallback((square, modifiers) => {
         const color = modifiers?.shiftKey
@@ -5743,6 +5741,7 @@ function ChessboardProvider({ children, options, }) {
 }
 
 function Arrows({ boardWidth, boardHeight }) {
+    console.log('function run');
     const { id, arrows, arrowOptions, boardOrientation, chessboardColumns, chessboardRows, newArrowStartSquare, newArrowOverSquare, clearArrows, } = useChessboardContext();
     if (!boardWidth) {
         return null;

@@ -9,6 +9,7 @@ type Props = {
 };
 
 export function Arrows({ boardWidth, boardHeight }: Props) {
+  console.log('function run');
   const {
     id,
     arrows,

@@ -473,11 +473,9 @@ export function ChessboardProvider({
   );
 
   const clearArrows = useCallback(() => {
-    if (clearArrowsOnClick) {
-      setInternalArrows([]);
-      setNewArrowStartSquare(null);
-      setNewArrowOverSquare(null);
-    }
+    setInternalArrows([]);
+    setNewArrowStartSquare(null);
+    setNewArrowOverSquare(null);
   }, [clearArrowsOnClick]);
 
   const setNewArrowOverSquareWithModifiers = useCallback(
