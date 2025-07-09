@@ -1,7 +1,7 @@
 # ♟️ React Chessboard
 
 <div align="center">
-
+This package is a fork of react-chessboard, originally created by Ryan Gregory.
 ![npm version](https://img.shields.io/npm/v/react-chessboard)
 ![npm downloads](https://img.shields.io/npm/dm/react-chessboard)
 ![license](https://img.shields.io/npm/l/react-chessboard)

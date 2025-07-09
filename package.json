@@ -1,13 +1,16 @@
 {
-  "name": "react-chessboard",
-  "version": "0.0.0-semantically-released",
-  "description": "The React Chessboard Library",
+  "name": "chesscanon-chessboard",
+  "version": "1.0.0",
+  "description": "The Chessboard Library Used by ChessCanon.com",
   "author": "Ryan Gregory <ryangregory.dev@outlook.com>",
   "license": "MIT",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
   "type": "module",
+  "publishConfig": {
+  "access": "public"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -25,12 +28,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Clariity/react-chessboard.git"
+    "url": "git+https://github.com/Epitomaniac/react-chessboard.git"
   },
   "bugs": {
-    "url": "https://github.com/Clariity/react-chessboard/issues"
+    "url": "https://github.com/Epitomaniac/react-chessboard/issues"
   },
-  "homepage": "https://github.com/Clariity/react-chessboard#readme",
+  "homepage": "https://github.com/Epitomaniac/react-chessboard#readme",
   "scripts": {
     "build": "rimraf dist && rollup -c",
     "test:static": "tsc && eslint src docs && prettier --check src docs",

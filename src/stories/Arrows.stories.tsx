@@ -50,7 +50,7 @@ export const Arrows: Story = {
     };
 
     function handleArrows(arrow: Arrow[]) {
-      console.log(arrow);
+      //console.log(arrow);
     }
 
     // chessboard options
