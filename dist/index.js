@@ -5745,7 +5745,7 @@ function ChessboardProvider({ children, options, }) {
 }
 
 function Arrows({ boardWidth, boardHeight }) {
-    const { id, arrows, arrowOptions, boardOrientation, chessboardColumns, chessboardRows, internalArrows, newArrowStartSquare, newArrowOverSquare, } = useChessboardContext();
+    const { id, arrows, arrowOptions, boardOrientation, chessboardColumns, chessboardRows, newArrowStartSquare, newArrowOverSquare, } = useChessboardContext();
     if (!boardWidth) {
         return null;
     }
@@ -5759,8 +5759,8 @@ function Arrows({ boardWidth, boardHeight }) {
         }
         : null;
     const arrowsToDraw = currentlyDrawingArrow
-        ? [...arrows, ...internalArrows, currentlyDrawingArrow]
-        : [...arrows, ...internalArrows];
+        ? [...arrows, currentlyDrawingArrow]
+        : [...arrows];
     return (jsxRuntimeExports.jsx("svg", { width: boardWidth, height: boardHeight, style: {
             position: 'absolute',
             top: '0',
