@@ -400,8 +400,12 @@ export function ChessboardProvider({
 
   // if the arrows change, call the onArrowsChange callback
   useEffect(() => {
-    onArrowsChange?.({ arrows: internalArrows });
-  }, [internalArrows]);
+    if (internalArrows.length > 0) {
+      onArrowsChange?.({
+        arrows: [...arrows, internalArrows[internalArrows.length - 1]],
+      });
+    }
+  }, [arrows, internalArrows]);
 
   // only redraw the board when the dimensions or board orientation change
   const board = useMemo(

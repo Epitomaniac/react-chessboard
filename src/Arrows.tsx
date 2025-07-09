@@ -16,7 +16,6 @@ export function Arrows({ boardWidth, boardHeight }: Props) {
     boardOrientation,
     chessboardColumns,
     chessboardRows,
-    internalArrows,
     newArrowStartSquare,
     newArrowOverSquare,
   } = useChessboardContext();
@@ -37,8 +36,8 @@ export function Arrows({ boardWidth, boardHeight }: Props) {
       : null;
 
   const arrowsToDraw = currentlyDrawingArrow
-    ? [...arrows, ...internalArrows, currentlyDrawingArrow]
-    : [...arrows, ...internalArrows];
+    ? [...arrows, currentlyDrawingArrow]
+    : [...arrows];
 
   return (
     <svg

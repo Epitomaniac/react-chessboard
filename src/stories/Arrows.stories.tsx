@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { useState } from 'react';
 
 import { Chessboard } from '../../src';
+import type { Arrow } from '../../src/types';
 
 const meta: Meta<typeof Chessboard> = {
   title: 'stories/Options/Arrows',
@@ -48,9 +49,14 @@ export const Arrows: Story = {
       setArrows(newArrows);
     };
 
+    function handleArrows({ arrows }: { arrows: Arrow[] }) {
+      console.log(arrows);
+    }
+
     // chessboard options
     const chessboardOptions = {
       arrows,
+      onArrowsChange: handleArrows,
       id: 'arrows',
     };
 
