@@ -18,11 +18,14 @@ export function Arrows({ boardWidth, boardHeight }: Props) {
     chessboardRows,
     newArrowStartSquare,
     newArrowOverSquare,
+    clearArrows,
   } = useChessboardContext();
 
   if (!boardWidth) {
     return null;
   }
+
+  clearArrows();
 
   const currentlyDrawingArrow =
     newArrowStartSquare &&

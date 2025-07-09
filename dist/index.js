@@ -5745,10 +5745,11 @@ function ChessboardProvider({ children, options, }) {
 }
 
 function Arrows({ boardWidth, boardHeight }) {
-    const { id, arrows, arrowOptions, boardOrientation, chessboardColumns, chessboardRows, newArrowStartSquare, newArrowOverSquare, } = useChessboardContext();
+    const { id, arrows, arrowOptions, boardOrientation, chessboardColumns, chessboardRows, newArrowStartSquare, newArrowOverSquare, clearArrows, } = useChessboardContext();
     if (!boardWidth) {
         return null;
     }
+    clearArrows();
     const currentlyDrawingArrow = newArrowStartSquare &&
         newArrowOverSquare &&
         newArrowStartSquare !== newArrowOverSquare.square
