@@ -70,15 +70,13 @@ function requireReactJsxRuntime_development () {
 	    function getComponentNameFromType(type) {
 	      if (null == type) return null;
 	      if ("function" === typeof type)
-	        return type.$$typeof === REACT_CLIENT_REFERENCE$2
+	        return type.$$typeof === REACT_CLIENT_REFERENCE
 	          ? null
 	          : type.displayName || type.name || null;
 	      if ("string" === typeof type) return type;
 	      switch (type) {
 	        case REACT_FRAGMENT_TYPE:
 	          return "Fragment";
-	        case REACT_PORTAL_TYPE:
-	          return "Portal";
 	        case REACT_PROFILER_TYPE:
 	          return "Profiler";
 	        case REACT_STRICT_MODE_TYPE:
@@ -87,6 +85,8 @@ function requireReactJsxRuntime_development () {
 	          return "Suspense";
 	        case REACT_SUSPENSE_LIST_TYPE:
 	          return "SuspenseList";
+	        case REACT_ACTIVITY_TYPE:
+	          return "Activity";
 	      }
 	      if ("object" === typeof type)
 	        switch (
@@ -96,6 +96,8 @@ function requireReactJsxRuntime_development () {
 	            ),
 	          type.$$typeof)
 	        ) {
+	          case REACT_PORTAL_TYPE:
+	            return "Portal";
 	          case REACT_CONTEXT_TYPE:
 	            return (type.displayName || "Context") + ".Provider";
 	          case REACT_CONSUMER_TYPE:
@@ -150,259 +152,27 @@ function requireReactJsxRuntime_development () {
 	        return testStringCoercion(value);
 	      }
 	    }
-	    function disabledLog() {}
-	    function disableLogs() {
-	      if (0 === disabledDepth) {
-	        prevLog = console.log;
-	        prevInfo = console.info;
-	        prevWarn = console.warn;
-	        prevError = console.error;
-	        prevGroup = console.group;
-	        prevGroupCollapsed = console.groupCollapsed;
-	        prevGroupEnd = console.groupEnd;
-	        var props = {
-	          configurable: true,
-	          enumerable: true,
-	          value: disabledLog,
-	          writable: true
-	        };
-	        Object.defineProperties(console, {
-	          info: props,
-	          log: props,
-	          warn: props,
-	          error: props,
-	          group: props,
-	          groupCollapsed: props,
-	          groupEnd: props
-	        });
-	      }
-	      disabledDepth++;
-	    }
-	    function reenableLogs() {
-	      disabledDepth--;
-	      if (0 === disabledDepth) {
-	        var props = { configurable: true, enumerable: true, writable: true };
-	        Object.defineProperties(console, {
-	          log: assign({}, props, { value: prevLog }),
-	          info: assign({}, props, { value: prevInfo }),
-	          warn: assign({}, props, { value: prevWarn }),
-	          error: assign({}, props, { value: prevError }),
-	          group: assign({}, props, { value: prevGroup }),
-	          groupCollapsed: assign({}, props, { value: prevGroupCollapsed }),
-	          groupEnd: assign({}, props, { value: prevGroupEnd })
-	        });
-	      }
-	      0 > disabledDepth &&
-	        console.error(
-	          "disabledDepth fell below zero. This is a bug in React. Please file an issue."
-	        );
-	    }
-	    function describeBuiltInComponentFrame(name) {
-	      if (void 0 === prefix)
-	        try {
-	          throw Error();
-	        } catch (x) {
-	          var match = x.stack.trim().match(/\n( *(at )?)/);
-	          prefix = (match && match[1]) || "";
-	          suffix =
-	            -1 < x.stack.indexOf("\n    at")
-	              ? " (<anonymous>)"
-	              : -1 < x.stack.indexOf("@")
-	                ? "@unknown:0:0"
-	                : "";
-	        }
-	      return "\n" + prefix + name + suffix;
-	    }
-	    function describeNativeComponentFrame(fn, construct) {
-	      if (!fn || reentry) return "";
-	      var frame = componentFrameCache.get(fn);
-	      if (void 0 !== frame) return frame;
-	      reentry = true;
-	      frame = Error.prepareStackTrace;
-	      Error.prepareStackTrace = void 0;
-	      var previousDispatcher = null;
-	      previousDispatcher = ReactSharedInternals.H;
-	      ReactSharedInternals.H = null;
-	      disableLogs();
+	    function getTaskName(type) {
+	      if (type === REACT_FRAGMENT_TYPE) return "<>";
+	      if (
+	        "object" === typeof type &&
+	        null !== type &&
+	        type.$$typeof === REACT_LAZY_TYPE
+	      )
+	        return "<...>";
 	      try {
-	        var RunInRootFrame = {
-	          DetermineComponentFrameRoot: function () {
-	            try {
-	              if (construct) {
-	                var Fake = function () {
-	                  throw Error();
-	                };
-	                Object.defineProperty(Fake.prototype, "props", {
-	                  set: function () {
-	                    throw Error();
-	                  }
-	                });
-	                if ("object" === typeof Reflect && Reflect.construct) {
-	                  try {
-	                    Reflect.construct(Fake, []);
-	                  } catch (x) {
-	                    var control = x;
-	                  }
-	                  Reflect.construct(fn, [], Fake);
-	                } else {
-	                  try {
-	                    Fake.call();
-	                  } catch (x$0) {
-	                    control = x$0;
-	                  }
-	                  fn.call(Fake.prototype);
-	                }
-	              } else {
-	                try {
-	                  throw Error();
-	                } catch (x$1) {
-	                  control = x$1;
-	                }
-	                (Fake = fn()) &&
-	                  "function" === typeof Fake.catch &&
-	                  Fake.catch(function () {});
-	              }
-	            } catch (sample) {
-	              if (sample && control && "string" === typeof sample.stack)
-	                return [sample.stack, control.stack];
-	            }
-	            return [null, null];
-	          }
-	        };
-	        RunInRootFrame.DetermineComponentFrameRoot.displayName =
-	          "DetermineComponentFrameRoot";
-	        var namePropDescriptor = Object.getOwnPropertyDescriptor(
-	          RunInRootFrame.DetermineComponentFrameRoot,
-	          "name"
-	        );
-	        namePropDescriptor &&
-	          namePropDescriptor.configurable &&
-	          Object.defineProperty(
-	            RunInRootFrame.DetermineComponentFrameRoot,
-	            "name",
-	            { value: "DetermineComponentFrameRoot" }
-	          );
-	        var _RunInRootFrame$Deter =
-	            RunInRootFrame.DetermineComponentFrameRoot(),
-	          sampleStack = _RunInRootFrame$Deter[0],
-	          controlStack = _RunInRootFrame$Deter[1];
-	        if (sampleStack && controlStack) {
-	          var sampleLines = sampleStack.split("\n"),
-	            controlLines = controlStack.split("\n");
-	          for (
-	            _RunInRootFrame$Deter = namePropDescriptor = 0;
-	            namePropDescriptor < sampleLines.length &&
-	            !sampleLines[namePropDescriptor].includes(
-	              "DetermineComponentFrameRoot"
-	            );
-
-	          )
-	            namePropDescriptor++;
-	          for (
-	            ;
-	            _RunInRootFrame$Deter < controlLines.length &&
-	            !controlLines[_RunInRootFrame$Deter].includes(
-	              "DetermineComponentFrameRoot"
-	            );
-
-	          )
-	            _RunInRootFrame$Deter++;
-	          if (
-	            namePropDescriptor === sampleLines.length ||
-	            _RunInRootFrame$Deter === controlLines.length
-	          )
-	            for (
-	              namePropDescriptor = sampleLines.length - 1,
-	                _RunInRootFrame$Deter = controlLines.length - 1;
-	              1 <= namePropDescriptor &&
-	              0 <= _RunInRootFrame$Deter &&
-	              sampleLines[namePropDescriptor] !==
-	                controlLines[_RunInRootFrame$Deter];
-
-	            )
-	              _RunInRootFrame$Deter--;
-	          for (
-	            ;
-	            1 <= namePropDescriptor && 0 <= _RunInRootFrame$Deter;
-	            namePropDescriptor--, _RunInRootFrame$Deter--
-	          )
-	            if (
-	              sampleLines[namePropDescriptor] !==
-	              controlLines[_RunInRootFrame$Deter]
-	            ) {
-	              if (1 !== namePropDescriptor || 1 !== _RunInRootFrame$Deter) {
-	                do
-	                  if (
-	                    (namePropDescriptor--,
-	                    _RunInRootFrame$Deter--,
-	                    0 > _RunInRootFrame$Deter ||
-	                      sampleLines[namePropDescriptor] !==
-	                        controlLines[_RunInRootFrame$Deter])
-	                  ) {
-	                    var _frame =
-	                      "\n" +
-	                      sampleLines[namePropDescriptor].replace(
-	                        " at new ",
-	                        " at "
-	                      );
-	                    fn.displayName &&
-	                      _frame.includes("<anonymous>") &&
-	                      (_frame = _frame.replace("<anonymous>", fn.displayName));
-	                    "function" === typeof fn &&
-	                      componentFrameCache.set(fn, _frame);
-	                    return _frame;
-	                  }
-	                while (1 <= namePropDescriptor && 0 <= _RunInRootFrame$Deter);
-	              }
-	              break;
-	            }
-	        }
-	      } finally {
-	        (reentry = false),
-	          (ReactSharedInternals.H = previousDispatcher),
-	          reenableLogs(),
-	          (Error.prepareStackTrace = frame);
+	        var name = getComponentNameFromType(type);
+	        return name ? "<" + name + ">" : "<...>";
+	      } catch (x) {
+	        return "<...>";
 	      }
-	      sampleLines = (sampleLines = fn ? fn.displayName || fn.name : "")
-	        ? describeBuiltInComponentFrame(sampleLines)
-	        : "";
-	      "function" === typeof fn && componentFrameCache.set(fn, sampleLines);
-	      return sampleLines;
-	    }
-	    function describeUnknownElementTypeFrameInDEV(type) {
-	      if (null == type) return "";
-	      if ("function" === typeof type) {
-	        var prototype = type.prototype;
-	        return describeNativeComponentFrame(
-	          type,
-	          !(!prototype || !prototype.isReactComponent)
-	        );
-	      }
-	      if ("string" === typeof type) return describeBuiltInComponentFrame(type);
-	      switch (type) {
-	        case REACT_SUSPENSE_TYPE:
-	          return describeBuiltInComponentFrame("Suspense");
-	        case REACT_SUSPENSE_LIST_TYPE:
-	          return describeBuiltInComponentFrame("SuspenseList");
-	      }
-	      if ("object" === typeof type)
-	        switch (type.$$typeof) {
-	          case REACT_FORWARD_REF_TYPE:
-	            return (type = describeNativeComponentFrame(type.render, false)), type;
-	          case REACT_MEMO_TYPE:
-	            return describeUnknownElementTypeFrameInDEV(type.type);
-	          case REACT_LAZY_TYPE:
-	            prototype = type._payload;
-	            type = type._init;
-	            try {
-	              return describeUnknownElementTypeFrameInDEV(type(prototype));
-	            } catch (x) {}
-	        }
-	      return "";
 	    }
 	    function getOwner() {
 	      var dispatcher = ReactSharedInternals.A;
 	      return null === dispatcher ? null : dispatcher.getOwner();
+	    }
+	    function UnknownOwner() {
+	      return Error("react-stack-top-frame");
 	    }
 	    function hasValidKey(config) {
 	      if (hasOwnProperty.call(config, "key")) {
@@ -436,7 +206,16 @@ function requireReactJsxRuntime_development () {
 	      componentName = this.props.ref;
 	      return void 0 !== componentName ? componentName : null;
 	    }
-	    function ReactElement(type, key, self, source, owner, props) {
+	    function ReactElement(
+	      type,
+	      key,
+	      self,
+	      source,
+	      owner,
+	      props,
+	      debugStack,
+	      debugTask
+	    ) {
 	      self = props.ref;
 	      type = {
 	        $$typeof: REACT_ELEMENT_TYPE,
@@ -464,6 +243,18 @@ function requireReactJsxRuntime_development () {
 	        writable: true,
 	        value: null
 	      });
+	      Object.defineProperty(type, "_debugStack", {
+	        configurable: false,
+	        enumerable: false,
+	        writable: true,
+	        value: debugStack
+	      });
+	      Object.defineProperty(type, "_debugTask", {
+	        configurable: false,
+	        enumerable: false,
+	        writable: true,
+	        value: debugTask
+	      });
 	      Object.freeze && (Object.freeze(type.props), Object.freeze(type));
 	      return type;
 	    }
@@ -473,71 +264,26 @@ function requireReactJsxRuntime_development () {
 	      maybeKey,
 	      isStaticChildren,
 	      source,
-	      self
+	      self,
+	      debugStack,
+	      debugTask
 	    ) {
-	      if (
-	        "string" === typeof type ||
-	        "function" === typeof type ||
-	        type === REACT_FRAGMENT_TYPE ||
-	        type === REACT_PROFILER_TYPE ||
-	        type === REACT_STRICT_MODE_TYPE ||
-	        type === REACT_SUSPENSE_TYPE ||
-	        type === REACT_SUSPENSE_LIST_TYPE ||
-	        type === REACT_OFFSCREEN_TYPE ||
-	        ("object" === typeof type &&
-	          null !== type &&
-	          (type.$$typeof === REACT_LAZY_TYPE ||
-	            type.$$typeof === REACT_MEMO_TYPE ||
-	            type.$$typeof === REACT_CONTEXT_TYPE ||
-	            type.$$typeof === REACT_CONSUMER_TYPE ||
-	            type.$$typeof === REACT_FORWARD_REF_TYPE ||
-	            type.$$typeof === REACT_CLIENT_REFERENCE$1 ||
-	            void 0 !== type.getModuleId))
-	      ) {
-	        var children = config.children;
-	        if (void 0 !== children)
-	          if (isStaticChildren)
-	            if (isArrayImpl(children)) {
-	              for (
-	                isStaticChildren = 0;
-	                isStaticChildren < children.length;
-	                isStaticChildren++
-	              )
-	                validateChildKeys(children[isStaticChildren], type);
-	              Object.freeze && Object.freeze(children);
-	            } else
-	              console.error(
-	                "React.jsx: Static children should always be an array. You are likely explicitly calling React.jsxs or React.jsxDEV. Use the Babel transform instead."
-	              );
-	          else validateChildKeys(children, type);
-	      } else {
-	        children = "";
-	        if (
-	          void 0 === type ||
-	          ("object" === typeof type &&
-	            null !== type &&
-	            0 === Object.keys(type).length)
-	        )
-	          children +=
-	            " You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.";
-	        null === type
-	          ? (isStaticChildren = "null")
-	          : isArrayImpl(type)
-	            ? (isStaticChildren = "array")
-	            : void 0 !== type && type.$$typeof === REACT_ELEMENT_TYPE
-	              ? ((isStaticChildren =
-	                  "<" +
-	                  (getComponentNameFromType(type.type) || "Unknown") +
-	                  " />"),
-	                (children =
-	                  " Did you accidentally export a JSX literal instead of a component?"))
-	              : (isStaticChildren = typeof type);
-	        console.error(
-	          "React.jsx: type is invalid -- expected a string (for built-in components) or a class/function (for composite components) but got: %s.%s",
-	          isStaticChildren,
-	          children
-	        );
-	      }
+	      var children = config.children;
+	      if (void 0 !== children)
+	        if (isStaticChildren)
+	          if (isArrayImpl(children)) {
+	            for (
+	              isStaticChildren = 0;
+	              isStaticChildren < children.length;
+	              isStaticChildren++
+	            )
+	              validateChildKeys(children[isStaticChildren]);
+	            Object.freeze && Object.freeze(children);
+	          } else
+	            console.error(
+	              "React.jsx: Static children should always be an array. You are likely explicitly calling React.jsxs or React.jsxDEV. Use the Babel transform instead."
+	            );
+	        else validateChildKeys(children);
 	      if (hasOwnProperty.call(config, "key")) {
 	        children = getComponentNameFromType(type);
 	        var keys = Object.keys(config).filter(function (k) {
@@ -576,88 +322,23 @@ function requireReactJsxRuntime_development () {
 	            ? type.displayName || type.name || "Unknown"
 	            : type
 	        );
-	      return ReactElement(type, children, self, source, getOwner(), maybeKey);
-	    }
-	    function validateChildKeys(node, parentType) {
-	      if (
-	        "object" === typeof node &&
-	        node &&
-	        node.$$typeof !== REACT_CLIENT_REFERENCE
-	      )
-	        if (isArrayImpl(node))
-	          for (var i = 0; i < node.length; i++) {
-	            var child = node[i];
-	            isValidElement(child) && validateExplicitKey(child, parentType);
-	          }
-	        else if (isValidElement(node))
-	          node._store && (node._store.validated = 1);
-	        else if (
-	          (null === node || "object" !== typeof node
-	            ? (i = null)
-	            : ((i =
-	                (MAYBE_ITERATOR_SYMBOL && node[MAYBE_ITERATOR_SYMBOL]) ||
-	                node["@@iterator"]),
-	              (i = "function" === typeof i ? i : null)),
-	          "function" === typeof i &&
-	            i !== node.entries &&
-	            ((i = i.call(node)), i !== node))
-	        )
-	          for (; !(node = i.next()).done; )
-	            isValidElement(node.value) &&
-	              validateExplicitKey(node.value, parentType);
-	    }
-	    function isValidElement(object) {
-	      return (
-	        "object" === typeof object &&
-	        null !== object &&
-	        object.$$typeof === REACT_ELEMENT_TYPE
+	      return ReactElement(
+	        type,
+	        children,
+	        self,
+	        source,
+	        getOwner(),
+	        maybeKey,
+	        debugStack,
+	        debugTask
 	      );
 	    }
-	    function validateExplicitKey(element, parentType) {
-	      if (
-	        element._store &&
-	        !element._store.validated &&
-	        null == element.key &&
-	        ((element._store.validated = 1),
-	        (parentType = getCurrentComponentErrorInfo(parentType)),
-	        !ownerHasKeyUseWarning[parentType])
-	      ) {
-	        ownerHasKeyUseWarning[parentType] = true;
-	        var childOwner = "";
-	        element &&
-	          null != element._owner &&
-	          element._owner !== getOwner() &&
-	          ((childOwner = null),
-	          "number" === typeof element._owner.tag
-	            ? (childOwner = getComponentNameFromType(element._owner.type))
-	            : "string" === typeof element._owner.name &&
-	              (childOwner = element._owner.name),
-	          (childOwner = " It was passed a child from " + childOwner + "."));
-	        var prevGetCurrentStack = ReactSharedInternals.getCurrentStack;
-	        ReactSharedInternals.getCurrentStack = function () {
-	          var stack = describeUnknownElementTypeFrameInDEV(element.type);
-	          prevGetCurrentStack && (stack += prevGetCurrentStack() || "");
-	          return stack;
-	        };
-	        console.error(
-	          'Each child in a list should have a unique "key" prop.%s%s See https://react.dev/link/warning-keys for more information.',
-	          parentType,
-	          childOwner
-	        );
-	        ReactSharedInternals.getCurrentStack = prevGetCurrentStack;
-	      }
-	    }
-	    function getCurrentComponentErrorInfo(parentType) {
-	      var info = "",
-	        owner = getOwner();
-	      owner &&
-	        (owner = getComponentNameFromType(owner.type)) &&
-	        (info = "\n\nCheck the render method of `" + owner + "`.");
-	      info ||
-	        ((parentType = getComponentNameFromType(parentType)) &&
-	          (info =
-	            "\n\nCheck the top-level render call using <" + parentType + ">."));
-	      return info;
+	    function validateChildKeys(node) {
+	      "object" === typeof node &&
+	        null !== node &&
+	        node.$$typeof === REACT_ELEMENT_TYPE &&
+	        node._store &&
+	        (node._store.validated = 1);
 	    }
 	    var React$1 = React,
 	      REACT_ELEMENT_TYPE = Symbol.for("react.transitional.element"),
@@ -672,41 +353,62 @@ function requireReactJsxRuntime_development () {
 	      REACT_SUSPENSE_LIST_TYPE = Symbol.for("react.suspense_list"),
 	      REACT_MEMO_TYPE = Symbol.for("react.memo"),
 	      REACT_LAZY_TYPE = Symbol.for("react.lazy"),
-	      REACT_OFFSCREEN_TYPE = Symbol.for("react.offscreen"),
-	      MAYBE_ITERATOR_SYMBOL = Symbol.iterator,
-	      REACT_CLIENT_REFERENCE$2 = Symbol.for("react.client.reference"),
+	      REACT_ACTIVITY_TYPE = Symbol.for("react.activity"),
+	      REACT_CLIENT_REFERENCE = Symbol.for("react.client.reference"),
 	      ReactSharedInternals =
 	        React$1.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,
 	      hasOwnProperty = Object.prototype.hasOwnProperty,
-	      assign = Object.assign,
-	      REACT_CLIENT_REFERENCE$1 = Symbol.for("react.client.reference"),
 	      isArrayImpl = Array.isArray,
-	      disabledDepth = 0,
-	      prevLog,
-	      prevInfo,
-	      prevWarn,
-	      prevError,
-	      prevGroup,
-	      prevGroupCollapsed,
-	      prevGroupEnd;
-	    disabledLog.__reactDisabledLog = true;
-	    var prefix,
-	      suffix,
-	      reentry = false;
-	    var componentFrameCache = new (
-	      "function" === typeof WeakMap ? WeakMap : Map
-	    )();
-	    var REACT_CLIENT_REFERENCE = Symbol.for("react.client.reference"),
-	      specialPropKeyWarningShown;
+	      createTask = console.createTask
+	        ? console.createTask
+	        : function () {
+	            return null;
+	          };
+	    React$1 = {
+	      "react-stack-bottom-frame": function (callStackForError) {
+	        return callStackForError();
+	      }
+	    };
+	    var specialPropKeyWarningShown;
 	    var didWarnAboutElementRef = {};
-	    var didWarnAboutKeySpread = {},
-	      ownerHasKeyUseWarning = {};
+	    var unknownOwnerDebugStack = React$1["react-stack-bottom-frame"].bind(
+	      React$1,
+	      UnknownOwner
+	    )();
+	    var unknownOwnerDebugTask = createTask(getTaskName(UnknownOwner));
+	    var didWarnAboutKeySpread = {};
 	    reactJsxRuntime_development.Fragment = REACT_FRAGMENT_TYPE;
 	    reactJsxRuntime_development.jsx = function (type, config, maybeKey, source, self) {
-	      return jsxDEVImpl(type, config, maybeKey, false, source, self);
+	      var trackActualOwner =
+	        1e4 > ReactSharedInternals.recentlyCreatedOwnerStacks++;
+	      return jsxDEVImpl(
+	        type,
+	        config,
+	        maybeKey,
+	        false,
+	        source,
+	        self,
+	        trackActualOwner
+	          ? Error("react-stack-top-frame")
+	          : unknownOwnerDebugStack,
+	        trackActualOwner ? createTask(getTaskName(type)) : unknownOwnerDebugTask
+	      );
 	    };
 	    reactJsxRuntime_development.jsxs = function (type, config, maybeKey, source, self) {
-	      return jsxDEVImpl(type, config, maybeKey, true, source, self);
+	      var trackActualOwner =
+	        1e4 > ReactSharedInternals.recentlyCreatedOwnerStacks++;
+	      return jsxDEVImpl(
+	        type,
+	        config,
+	        maybeKey,
+	        true,
+	        source,
+	        self,
+	        trackActualOwner
+	          ? Error("react-stack-top-frame")
+	          : unknownOwnerDebugStack,
+	        trackActualOwner ? createTask(getTaskName(type)) : unknownOwnerDebugTask
+	      );
 	    };
 	  })();
 	return reactJsxRuntime_development;
@@ -5424,9 +5126,9 @@ const defaultDraggingPieceGhostStyle = {
     opacity: 0.5,
 };
 const defaultArrowOptions = {
-    color: '#ffaa00', // color if no modifiers are held down when drawing an arrow
-    secondaryColor: '#4caf50', // color if shift is held down when drawing an arrow
-    tertiaryColor: '#f44336', // color if control is held down when drawing an arrow
+    primaryColor: '#ff0000', // color if no modifiers are held down when drawing an arrow
+    secondaryColor: '#2f8335', // color if shift is held down when drawing an arrow
+    tertiaryColor: '#fcba03', // color if control is held down when drawing an arrow
     arrowLengthReducerDenominator: 8, // the lower the denominator, the greater the arrow length reduction (e.g. 8 = 1/8 of a square width removed, 4 = 1/4 of a square width removed)
     sameTargetArrowLengthReducerDenominator: 4, // as above but for arrows targeting the same square (a greater reduction is used to avoid overlaps)
     arrowWidthDenominator: 5, // the lower the denominator, the greater the arrow width (e.g. 5 = 1/5 of a square width, 10 = 1/10 of a square width)
@@ -5435,7 +5137,6 @@ const defaultArrowOptions = {
     activeOpacity: 0.5, // opacity of arrow when it is being drawn
 };
 
-console.log('test');
 const ChessboardContext = React.createContext(null);
 const useChessboardContext = () => React.use(ChessboardContext);
 function ChessboardProvider({ children, options, }) {
@@ -5471,7 +5172,7 @@ function ChessboardProvider({ children, options, }) {
     // arrows
     const [newArrowStartSquare, setNewArrowStartSquare] = React.useState(null);
     const [newArrowOverSquare, setNewArrowOverSquare] = React.useState(null);
-    const [internalArrows, setInternalArrows] = React.useState([]);
+    const [drawnArrow, setDrawnArrow] = React.useState([]);
     // position we are animating to, if a new position comes in before the animation completes, we will use this to set the new position
     const [waitingForAnimationPosition, setWaitingForAnimationPosition] = React.useState(null);
     // the animation timeout whilst waiting for animation to complete
@@ -5552,23 +5253,14 @@ function ChessboardProvider({ children, options, }) {
     }, [chessboardRows, chessboardColumns, boardOrientation]);
     // if the arrows change, call the onArrowsChange callback
     React.useEffect(() => {
-        onArrowsChange?.({ arrows: internalArrows });
-    }, [internalArrows]);
+        if (drawnArrow.length > 0) {
+            onArrowsChange?.(drawnArrow);
+        }
+    }, [drawnArrow]);
     // only redraw the board when the dimensions or board orientation change
     const board = React.useMemo(() => generateBoard(chessboardRows, chessboardColumns, boardOrientation), [chessboardRows, chessboardColumns, boardOrientation]);
     const drawArrow = React.useCallback((newArrowEndSquare, modifiers) => {
         if (!allowDrawingArrows) {
-            return;
-        }
-        console.log('draw function run');
-        const arrowExistsIndex = internalArrows.findIndex((arrow) => arrow.startSquare === newArrowStartSquare &&
-            arrow.endSquare === newArrowEndSquare);
-        const arrowExistsExternally = arrows.some((arrow) => arrow.startSquare === newArrowStartSquare &&
-            arrow.endSquare === newArrowEndSquare);
-        // if the arrow already exists externally, don't add it to the internal arrows
-        if (arrowExistsExternally) {
-            setNewArrowStartSquare(null);
-            setNewArrowOverSquare(null);
             return;
         }
         // new arrow with different start and end square, add to internal arrows or remove if it already exists
@@ -5577,42 +5269,40 @@ function ChessboardProvider({ children, options, }) {
                 ? arrowOptions.secondaryColor
                 : modifiers?.ctrlKey
                     ? arrowOptions.tertiaryColor
-                    : arrowOptions.color;
-            setInternalArrows((prevArrows) => arrowExistsIndex === -1
-                ? [
-                    ...prevArrows,
-                    {
-                        startSquare: newArrowStartSquare,
-                        endSquare: newArrowEndSquare,
-                        color: arrowColor,
-                    },
-                ]
-                : prevArrows.filter((_, index) => index !== arrowExistsIndex));
+                    : arrowOptions.primaryColor;
+            setDrawnArrow([
+                {
+                    startSquare: newArrowStartSquare,
+                    endSquare: newArrowEndSquare,
+                    color: arrowColor,
+                },
+            ]);
             setNewArrowStartSquare(null);
             setNewArrowOverSquare(null);
         }
     }, [
         allowDrawingArrows,
         arrows,
-        arrowOptions.color,
+        arrowOptions.primaryColor,
         arrowOptions.secondaryColor,
         arrowOptions.tertiaryColor,
-        internalArrows,
+        drawnArrow,
         newArrowStartSquare,
         newArrowOverSquare,
     ]);
     const clearArrows = React.useCallback(() => {
-        setInternalArrows([]);
-        setNewArrowStartSquare(null);
-        setNewArrowOverSquare(null);
+        if (clearArrowsOnClick) {
+            setDrawnArrow([]);
+            setNewArrowStartSquare(null);
+            setNewArrowOverSquare(null);
+        }
     }, [clearArrowsOnClick]);
     const setNewArrowOverSquareWithModifiers = React.useCallback((square, modifiers) => {
-        console.log('set new arrow function run');
         const color = modifiers?.shiftKey
             ? arrowOptions.secondaryColor
             : modifiers?.ctrlKey
                 ? arrowOptions.tertiaryColor
-                : arrowOptions.color;
+                : arrowOptions.primaryColor;
         setNewArrowOverSquare({ square, color });
     }, [arrowOptions]);
     const handleDragCancel = React.useCallback(() => {
@@ -5739,19 +5429,17 @@ function ChessboardProvider({ children, options, }) {
             newArrowOverSquare,
             setNewArrowStartSquare,
             setNewArrowOverSquare: setNewArrowOverSquareWithModifiers,
-            internalArrows,
+            drawnArrow,
             drawArrow,
             clearArrows,
         }, children: jsxRuntimeExports.jsx(DndContext, { collisionDetection: collisionDetection, onDragStart: handleDragStart, onDragEnd: handleDragEnd, onDragCancel: handleDragCancel, sensors: sensors, children: children }) }));
 }
 
 function Arrows({ boardWidth, boardHeight }) {
-    console.log('arrows function run');
-    const { id, arrows, arrowOptions, boardOrientation, chessboardColumns, chessboardRows, newArrowStartSquare, newArrowOverSquare, clearArrows, } = useChessboardContext();
+    const { id, arrows, arrowOptions, boardOrientation, chessboardColumns, chessboardRows, newArrowStartSquare, newArrowOverSquare, } = useChessboardContext();
     if (!boardWidth) {
         return null;
     }
-    clearArrows();
     const currentlyDrawingArrow = newArrowStartSquare &&
         newArrowOverSquare &&
         newArrowStartSquare !== newArrowOverSquare.square

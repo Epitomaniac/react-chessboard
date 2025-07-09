@@ -117,7 +117,7 @@ type ContextType = {
     square: string,
     modifiers?: { shiftKey: boolean; ctrlKey: boolean },
   ) => void;
-  internalArrows: Arrow[];
+  drawnArrow: Arrow[];
   drawArrow: (
     newArrowEndSquare: string,
     modifiers?: { shiftKey: boolean; ctrlKey: boolean },
@@ -176,7 +176,7 @@ export type ChessboardOptions = {
 
   // handlers
   canDragPiece?: ({ isSparePiece, piece, square }: PieceHandlerArgs) => boolean;
-  onArrowsChange?: ({ arrows }: { arrows: Arrow[] }) => void;
+  onArrowsChange?: (arrow: Arrow[]) => void;
   onMouseOutSquare?: ({ piece, square }: SquareHandlerArgs) => void;
   onMouseOverSquare?: ({ piece, square }: SquareHandlerArgs) => void;
   onPieceClick?: ({ isSparePiece, piece, square }: PieceHandlerArgs) => void;
@@ -289,7 +289,7 @@ export function ChessboardProvider({
     square: string;
     color: string;
   } | null>(null);
-  const [internalArrows, setInternalArrows] = useState<Arrow[]>([]);
+  const [drawnArrow, setDrawnArrow] = useState<Arrow[]>([]);
 
   // position we are animating to, if a new position comes in before the animation completes, we will use this to set the new position
   const [waitingForAnimationPosition, setWaitingForAnimationPosition] =
@@ -400,12 +400,10 @@ export function ChessboardProvider({
 
   // if the arrows change, call the onArrowsChange callback
   useEffect(() => {
-    if (internalArrows.length > 0) {
-      onArrowsChange?.({
-        arrows: [...arrows, internalArrows[internalArrows.length - 1]],
-      });
+    if (drawnArrow.length > 0) {
+      onArrowsChange?.(drawnArrow);
     }
-  }, [arrows, internalArrows]);
+  }, [drawnArrow]);
 
   // only redraw the board when the dimensions or board orientation change
   const board = useMemo(
@@ -422,44 +420,21 @@ export function ChessboardProvider({
         return;
       }
 
-      const arrowExistsIndex = internalArrows.findIndex(
-        (arrow) =>
-          arrow.startSquare === newArrowStartSquare &&
-          arrow.endSquare === newArrowEndSquare,
-      );
-      const arrowExistsExternally = arrows.some(
-        (arrow) =>
-          arrow.startSquare === newArrowStartSquare &&
-          arrow.endSquare === newArrowEndSquare,
-      );
-
-      // if the arrow already exists externally, don't add it to the internal arrows
-      if (arrowExistsExternally) {
-        setNewArrowStartSquare(null);
-        setNewArrowOverSquare(null);
-        return;
-      }
-
       // new arrow with different start and end square, add to internal arrows or remove if it already exists
       if (newArrowStartSquare && newArrowStartSquare !== newArrowEndSquare) {
         const arrowColor = modifiers?.shiftKey
           ? arrowOptions.secondaryColor
           : modifiers?.ctrlKey
             ? arrowOptions.tertiaryColor
-            : arrowOptions.color;
+            : arrowOptions.primaryColor;
 
-        setInternalArrows((prevArrows) =>
-          arrowExistsIndex === -1
-            ? [
-                ...prevArrows,
-                {
-                  startSquare: newArrowStartSquare,
-                  endSquare: newArrowEndSquare,
-                  color: arrowColor,
-                },
-              ]
-            : prevArrows.filter((_, index) => index !== arrowExistsIndex),
-        );
+        setDrawnArrow([
+          {
+            startSquare: newArrowStartSquare,
+            endSquare: newArrowEndSquare,
+            color: arrowColor,
+          },
+        ]);
         setNewArrowStartSquare(null);
         setNewArrowOverSquare(null);
       }
@@ -467,10 +442,10 @@ export function ChessboardProvider({
     [
       allowDrawingArrows,
       arrows,
-      arrowOptions.color,
+      arrowOptions.primaryColor,
       arrowOptions.secondaryColor,
       arrowOptions.tertiaryColor,
-      internalArrows,
+      drawnArrow,
       newArrowStartSquare,
       newArrowOverSquare,
     ],
@@ -478,7 +453,7 @@ export function ChessboardProvider({
 
   const clearArrows = useCallback(() => {
     if (clearArrowsOnClick) {
-      setInternalArrows([]);
+      setDrawnArrow([]);
       setNewArrowStartSquare(null);
       setNewArrowOverSquare(null);
     }
@@ -490,7 +465,7 @@ export function ChessboardProvider({
         ? arrowOptions.secondaryColor
         : modifiers?.ctrlKey
           ? arrowOptions.tertiaryColor
-          : arrowOptions.color;
+          : arrowOptions.primaryColor;
       setNewArrowOverSquare({ square, color });
     },
     [arrowOptions],
@@ -654,7 +629,7 @@ export function ChessboardProvider({
         newArrowOverSquare,
         setNewArrowStartSquare,
         setNewArrowOverSquare: setNewArrowOverSquareWithModifiers,
-        internalArrows,
+        drawnArrow,
         drawArrow,
         clearArrows,
       }}

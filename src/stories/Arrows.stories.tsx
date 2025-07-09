@@ -5,7 +5,7 @@ import { Chessboard } from '../../src';
 import type { Arrow } from '../../src/types';
 
 const meta: Meta<typeof Chessboard> = {
-  title: 'stories/Options/Arrows',
+  title: 'stories/Arrows',
 } satisfies Meta<typeof Chessboard>;
 
 export default meta;
@@ -30,15 +30,15 @@ const getUniqueSquares = (count: number) => {
 export const Arrows: Story = {
   render: () => {
     const [arrows, setArrows] = useState([
-      { startSquare: 'e2', endSquare: 'e4', color: 'red' },
-      { startSquare: 'g1', endSquare: 'f3', color: 'blue' },
-      { startSquare: 'c1', endSquare: 'g5', color: 'green' },
+      { startSquare: 'e2', endSquare: 'e4', color: '#ff0000' },
+      { startSquare: 'g1', endSquare: 'f3', color: '#2f8335' },
+      { startSquare: 'c1', endSquare: 'g5', color: '#fcba03' },
     ]);
 
     const generateRandomArrows = () => {
       // Get 6 unique squares (3 pairs of start/end squares)
       const uniqueSquares = getUniqueSquares(6);
-      const colors = ['red', 'blue', 'green'];
+      const colors = ['#ff0000', '#2f8335', '#fcba03'];
 
       const newArrows = Array.from({ length: 3 }, (_, index) => ({
         startSquare: uniqueSquares[index * 2],
@@ -49,8 +49,8 @@ export const Arrows: Story = {
       setArrows(newArrows);
     };
 
-    function handleArrows({ arrows }: { arrows: Arrow[] }) {
-      console.log(arrows);
+    function handleArrows(arrow: Arrow[]) {
+      console.log(arrow);
     }
 
     // chessboard options

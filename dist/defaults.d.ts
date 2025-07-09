@@ -10,7 +10,7 @@ export declare const defaultNumericNotationStyle: React.CSSProperties;
 export declare const defaultDraggingPieceStyle: React.CSSProperties;
 export declare const defaultDraggingPieceGhostStyle: React.CSSProperties;
 export declare const defaultArrowOptions: {
-    color: string;
+    primaryColor: string;
     secondaryColor: string;
     tertiaryColor: string;
     arrowLengthReducerDenominator: number;
