@@ -5557,6 +5557,7 @@ function ChessboardProvider({ children, options, }) {
         if (!allowDrawingArrows) {
             return;
         }
+        console.log('draw function run');
         const arrowExistsIndex = internalArrows.findIndex((arrow) => arrow.startSquare === newArrowStartSquare &&
             arrow.endSquare === newArrowEndSquare);
         const arrowExistsExternally = arrows.some((arrow) => arrow.startSquare === newArrowStartSquare &&
@@ -5603,6 +5604,7 @@ function ChessboardProvider({ children, options, }) {
         setNewArrowOverSquare(null);
     }, [clearArrowsOnClick]);
     const setNewArrowOverSquareWithModifiers = useCallback((square, modifiers) => {
+        console.log('set new arrow function run');
         const color = modifiers?.shiftKey
             ? arrowOptions.secondaryColor
             : modifiers?.ctrlKey
@@ -5741,7 +5743,7 @@ function ChessboardProvider({ children, options, }) {
 }
 
 function Arrows({ boardWidth, boardHeight }) {
-    console.log('function run');
+    console.log('arrows function run');
     const { id, arrows, arrowOptions, boardOrientation, chessboardColumns, chessboardRows, newArrowStartSquare, newArrowOverSquare, clearArrows, } = useChessboardContext();
     if (!boardWidth) {
         return null;

@@ -417,7 +417,7 @@ export function ChessboardProvider({
       if (!allowDrawingArrows) {
         return;
       }
-
+      console.log('draw function run');
       const arrowExistsIndex = internalArrows.findIndex(
         (arrow) =>
           arrow.startSquare === newArrowStartSquare &&
@@ -480,6 +480,7 @@ export function ChessboardProvider({
 
   const setNewArrowOverSquareWithModifiers = useCallback(
     (square: string, modifiers?: { shiftKey: boolean; ctrlKey: boolean }) => {
+      console.log('set new arrow function run');
       const color = modifiers?.shiftKey
         ? arrowOptions.secondaryColor
         : modifiers?.ctrlKey
