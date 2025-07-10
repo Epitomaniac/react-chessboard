@@ -1,7 +1,7 @@
 export type Arrow = {
     startSquare: string;
     endSquare: string;
-    color: string;
+    color: 'primary' | 'secondary' | 'tertiary';
 };
 export type SquareDataType = {
     squareId: string;

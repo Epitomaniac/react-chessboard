@@ -1,6 +1,4 @@
-export declare function defaultBoardStyle(
-  chessboardColumns: number,
-): React.CSSProperties;
+export declare function defaultBoardStyle(chessboardColumns: number): React.CSSProperties;
 export declare const defaultSquareStyle: React.CSSProperties;
 export declare const defaultDarkSquareStyle: React.CSSProperties;
 export declare const defaultLightSquareStyle: React.CSSProperties;
@@ -12,13 +10,13 @@ export declare const defaultNumericNotationStyle: React.CSSProperties;
 export declare const defaultDraggingPieceStyle: React.CSSProperties;
 export declare const defaultDraggingPieceGhostStyle: React.CSSProperties;
 export declare const defaultArrowOptions: {
-  primaryColor: string;
-  secondaryColor: string;
-  tertiaryColor: string;
-  arrowLengthReducerDenominator: number;
-  sameTargetArrowLengthReducerDenominator: number;
-  arrowWidthDenominator: number;
-  activeArrowWidthMultiplier: number;
-  opacity: number;
-  activeOpacity: number;
+    primaryColor: string;
+    secondaryColor: string;
+    tertiaryColor: string;
+    arrowLengthReducerDenominator: number;
+    sameTargetArrowLengthReducerDenominator: number;
+    arrowWidthDenominator: number;
+    activeArrowWidthMultiplier: number;
+    opacity: number;
+    activeOpacity: number;
 };

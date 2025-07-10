@@ -5154,7 +5154,7 @@ function ChessboardProvider({ children, options, }) {
     // drag and drop
     allowDragging = true, allowDragOffBoard = true, dragActivationDistance = 1, 
     // arrows
-    allowDrawingArrows = true, arrows = [], arrowOptions = defaultArrowOptions, clearArrowsOnClick = true, 
+    allowDrawingArrows = true, arrows = [], arrowOptions = defaultArrowOptions, 
     // handlers
     canDragPiece, onArrowsChange, onMouseOutSquare, onMouseOverSquare, onPieceClick, onPieceDrag, onPieceDrop, onSquareClick, onSquareRightClick, squareRenderer, } = options || {};
     // the piece currently being dragged
@@ -5170,7 +5170,8 @@ function ChessboardProvider({ children, options, }) {
     // arrows
     const [newArrowStartSquare, setNewArrowStartSquare] = useState(null);
     const [newArrowOverSquare, setNewArrowOverSquare] = useState(null);
-    const [drawnArrow, setDrawnArrow] = useState([]);
+    const [internalArrows, setInternalArrows] = useState([]);
+    const [externalArrows, setExternalArrows] = useState([]);
     // position we are animating to, if a new position comes in before the animation completes, we will use this to set the new position
     const [waitingForAnimationPosition, setWaitingForAnimationPosition] = useState(null);
     // the animation timeout whilst waiting for animation to complete
@@ -5249,52 +5250,69 @@ function ChessboardProvider({ children, options, }) {
             ? fenStringToPositionObject(position, chessboardRows, chessboardColumns)
             : position);
     }, [chessboardRows, chessboardColumns, boardOrientation]);
+    // acts as an event listener for the chessboard's arrows prop
+    useEffect(() => {
+        setExternalArrows(arrows);
+        setInternalArrows([]); // external arrows should act at the single source of truth
+    }, [arrows]);
     // if the arrows change, call the onArrowsChange callback
     useEffect(() => {
-        if (drawnArrow.length > 0) {
-            onArrowsChange?.(drawnArrow);
-        }
-    }, [drawnArrow]);
+        onArrowsChange?.([...externalArrows, ...internalArrows]);
+    }, [externalArrows, internalArrows]);
     // only redraw the board when the dimensions or board orientation change
     const board = useMemo(() => generateBoard(chessboardRows, chessboardColumns, boardOrientation), [chessboardRows, chessboardColumns, boardOrientation]);
     const drawArrow = useCallback((newArrowEndSquare, modifiers) => {
         if (!allowDrawingArrows) {
             return;
         }
+        const arrowExistsIndex = internalArrows.findIndex((arrow) => arrow.startSquare === newArrowStartSquare &&
+            arrow.endSquare === newArrowEndSquare);
+        const arrowExistsExternally = externalArrows.some((arrow) => arrow.startSquare === newArrowStartSquare &&
+            arrow.endSquare === newArrowEndSquare);
+        // if the arrow already exists externally, don't add it to the internal arrows
+        if (arrowExistsExternally) {
+            setNewArrowStartSquare(null);
+            setNewArrowOverSquare(null);
+            return;
+        }
         // new arrow with different start and end square, add to internal arrows or remove if it already exists
         if (newArrowStartSquare && newArrowStartSquare !== newArrowEndSquare) {
             const arrowColor = modifiers?.shiftKey
-                ? arrowOptions.secondaryColor
+                ? 'secondary'
                 : modifiers?.ctrlKey
-                    ? arrowOptions.tertiaryColor
-                    : arrowOptions.primaryColor;
-            setDrawnArrow([
-                {
-                    startSquare: newArrowStartSquare,
-                    endSquare: newArrowEndSquare,
-                    color: arrowColor,
-                },
-            ]);
+                    ? 'tertiary'
+                    : 'primary';
+            setInternalArrows((prevArrows) => arrowExistsIndex === -1
+                ? [
+                    ...prevArrows,
+                    {
+                        startSquare: newArrowStartSquare,
+                        endSquare: newArrowEndSquare,
+                        color: arrowColor,
+                    },
+                ]
+                : prevArrows.filter((_, index) => index !== arrowExistsIndex));
             setNewArrowStartSquare(null);
             setNewArrowOverSquare(null);
         }
     }, [
         allowDrawingArrows,
-        arrows,
+        externalArrows,
+        internalArrows,
         arrowOptions.primaryColor,
         arrowOptions.secondaryColor,
         arrowOptions.tertiaryColor,
-        drawnArrow,
         newArrowStartSquare,
         newArrowOverSquare,
     ]);
     const clearArrows = useCallback(() => {
-        if (clearArrowsOnClick) {
-            setDrawnArrow([]);
+        if (allowDrawingArrows) {
+            setInternalArrows([]);
+            setExternalArrows([]);
             setNewArrowStartSquare(null);
             setNewArrowOverSquare(null);
         }
-    }, [clearArrowsOnClick]);
+    }, [allowDrawingArrows]);
     const setNewArrowOverSquareWithModifiers = useCallback((square, modifiers) => {
         const color = modifiers?.shiftKey
             ? arrowOptions.secondaryColor
@@ -5427,14 +5445,15 @@ function ChessboardProvider({ children, options, }) {
             newArrowOverSquare,
             setNewArrowStartSquare,
             setNewArrowOverSquare: setNewArrowOverSquareWithModifiers,
-            drawnArrow,
+            internalArrows,
+            externalArrows,
             drawArrow,
             clearArrows,
         }, children: jsxRuntimeExports.jsx(DndContext, { collisionDetection: collisionDetection, onDragStart: handleDragStart, onDragEnd: handleDragEnd, onDragCancel: handleDragCancel, sensors: sensors, children: children }) }));
 }
 
 function Arrows({ boardWidth, boardHeight }) {
-    const { id, arrows, arrowOptions, boardOrientation, chessboardColumns, chessboardRows, newArrowStartSquare, newArrowOverSquare, } = useChessboardContext();
+    const { id, externalArrows, internalArrows, arrowOptions, boardOrientation, chessboardColumns, chessboardRows, newArrowStartSquare, newArrowOverSquare, } = useChessboardContext();
     if (!boardWidth) {
         return null;
     }
@@ -5448,8 +5467,8 @@ function Arrows({ boardWidth, boardHeight }) {
         }
         : null;
     const arrowsToDraw = currentlyDrawingArrow
-        ? [...arrows, currentlyDrawingArrow]
-        : [...arrows];
+        ? [...externalArrows, ...internalArrows, currentlyDrawingArrow]
+        : [...externalArrows, ...internalArrows];
     return (jsxRuntimeExports.jsx("svg", { width: boardWidth, height: boardHeight, style: {
             position: 'absolute',
             top: '0',
@@ -5488,9 +5507,22 @@ function Arrows({ boardWidth, boardHeight }) {
                 // Same calculation for y coordinate
                 y: from.y + (dy * (r - ARROW_LENGTH_REDUCER)) / r,
             };
-            return (jsxRuntimeExports.jsxs(Fragment, { children: [jsxRuntimeExports.jsx("marker", { id: `${id}-arrowhead-${i}-${arrow.startSquare}-${arrow.endSquare}`, markerWidth: "2", markerHeight: "2.5", refX: "1.25", refY: "1.25", orient: "auto", children: jsxRuntimeExports.jsx("polygon", { points: "0.3 0, 2 1.25, 0.3 2.5", fill: arrow.color }) }), jsxRuntimeExports.jsx("line", { x1: from.x, y1: from.y, x2: end.x, y2: end.y, opacity: isArrowActive
+            const resolveColor = (color) => {
+                switch (color) {
+                    case 'primary':
+                        return arrowOptions.primaryColor;
+                    case 'secondary':
+                        return arrowOptions.secondaryColor;
+                    case 'tertiary':
+                        return arrowOptions.tertiaryColor;
+                    default:
+                        return color ?? arrowOptions.primaryColor;
+                }
+            };
+            const color = resolveColor(arrow.color);
+            return (jsxRuntimeExports.jsxs(Fragment, { children: [jsxRuntimeExports.jsx("marker", { id: `${id}-arrowhead-${i}-${arrow.startSquare}-${arrow.endSquare}`, markerWidth: "2", markerHeight: "2.5", refX: "1.25", refY: "1.25", orient: "auto", children: jsxRuntimeExports.jsx("polygon", { points: "0.3 0, 2 1.25, 0.3 2.5", fill: color }) }), jsxRuntimeExports.jsx("line", { x1: from.x, y1: from.y, x2: end.x, y2: end.y, opacity: isArrowActive
                             ? arrowOptions.activeOpacity
-                            : arrowOptions.opacity, stroke: arrow.color, strokeWidth: isArrowActive
+                            : arrowOptions.opacity, stroke: color, strokeWidth: isArrowActive
                             ? arrowOptions.activeArrowWidthMultiplier *
                                 (squareWidth / arrowOptions.arrowWidthDenominator)
                             : squareWidth / arrowOptions.arrowWidthDenominator, markerEnd: `url(#${id}-arrowhead-${i}-${arrow.startSquare}-${arrow.endSquare})` })] }, `${id}-arrow-${arrow.startSquare}-${arrow.endSquare}${isArrowActive ? '-active' : ''}`));
@@ -5732,10 +5764,21 @@ function Board() {
 
 function Chessboard({ options }) {
     const { isWrapped } = useChessboardContext() ?? { isWrapped: false };
+    // ensure arrowOptions is a fresh object if provided
+    const stableOptions = useMemo(() => {
+        if (!options)
+            return undefined;
+        return {
+            ...options,
+            arrowOptions: options.arrowOptions
+                ? { ...options.arrowOptions }
+                : undefined,
+        };
+    }, [options]);
     if (isWrapped) {
         return jsxRuntimeExports.jsx(Board, {});
     }
-    return (jsxRuntimeExports.jsx(ChessboardProvider, { options: options, children: jsxRuntimeExports.jsx(Board, {}) }));
+    return (jsxRuntimeExports.jsx(ChessboardProvider, { options: stableOptions, children: jsxRuntimeExports.jsx(Board, {}) }));
 }
 
 function SparePiece({ pieceType }) {

@@ -50,7 +50,8 @@ type ContextType = {
         shiftKey: boolean;
         ctrlKey: boolean;
     }) => void;
-    drawnArrow: Arrow[];
+    internalArrows: Arrow[];
+    externalArrows: Arrow[];
     drawArrow: (newArrowEndSquare: string, modifiers?: {
         shiftKey: boolean;
         ctrlKey: boolean;
@@ -88,7 +89,7 @@ export type ChessboardOptions = {
     arrowOptions?: typeof defaultArrowOptions;
     clearArrowsOnClick?: boolean;
     canDragPiece?: ({ isSparePiece, piece, square }: PieceHandlerArgs) => boolean;
-    onArrowsChange?: (arrow: Arrow[]) => void;
+    onArrowsChange?: (arrows: Arrow[]) => void;
     onMouseOutSquare?: ({ piece, square }: SquareHandlerArgs) => void;
     onMouseOverSquare?: ({ piece, square }: SquareHandlerArgs) => void;
     onPieceClick?: ({ isSparePiece, piece, square }: PieceHandlerArgs) => void;
