@@ -118,6 +118,7 @@ type ContextType = {
     modifiers?: { shiftKey: boolean; ctrlKey: boolean },
   ) => void;
   internalArrows: Arrow[];
+  externalArrows: Arrow[];
   drawArrow: (
     newArrowEndSquare: string,
     modifiers?: { shiftKey: boolean; ctrlKey: boolean },
@@ -290,6 +291,7 @@ export function ChessboardProvider({
     color: string;
   } | null>(null);
   const [internalArrows, setInternalArrows] = useState<Arrow[]>([]);
+  const [externalArrows, setExternalArrows] = useState<Arrow[]>([]);
 
   // position we are animating to, if a new position comes in before the animation completes, we will use this to set the new position
   const [waitingForAnimationPosition, setWaitingForAnimationPosition] =
@@ -398,10 +400,16 @@ export function ChessboardProvider({
     );
   }, [chessboardRows, chessboardColumns, boardOrientation]);
 
+  // acts as an event listener for the chessboard's arrows prop
+  useEffect(() => {
+    setExternalArrows(arrows);
+    setInternalArrows([]); // external arrows should act at the single source of truth
+  }, [arrows]);
+
   // if the arrows change, call the onArrowsChange callback
   useEffect(() => {
-    onArrowsChange?.([...arrows, ...internalArrows]);
-  }, [arrows, internalArrows]);
+    onArrowsChange?.([...externalArrows, ...internalArrows]);
+  }, [externalArrows, internalArrows]);
 
   // only redraw the board when the dimensions or board orientation change
   const board = useMemo(
@@ -423,7 +431,7 @@ export function ChessboardProvider({
           arrow.startSquare === newArrowStartSquare &&
           arrow.endSquare === newArrowEndSquare,
       );
-      const arrowExistsExternally = arrows.some(
+      const arrowExistsExternally = externalArrows.some(
         (arrow) =>
           arrow.startSquare === newArrowStartSquare &&
           arrow.endSquare === newArrowEndSquare,
@@ -462,23 +470,24 @@ export function ChessboardProvider({
     },
     [
       allowDrawingArrows,
-      arrows,
+      externalArrows,
+      internalArrows,
       arrowOptions.primaryColor,
       arrowOptions.secondaryColor,
       arrowOptions.tertiaryColor,
-      internalArrows,
       newArrowStartSquare,
       newArrowOverSquare,
     ],
   );
 
   const clearArrows = useCallback(() => {
-    if (clearArrowsOnClick) {
+    if (allowDrawingArrows) {
       setInternalArrows([]);
+      setExternalArrows([]);
       setNewArrowStartSquare(null);
       setNewArrowOverSquare(null);
     }
-  }, [clearArrowsOnClick]);
+  }, [allowDrawingArrows]);
 
   const setNewArrowOverSquareWithModifiers = useCallback(
     (square: string, modifiers?: { shiftKey: boolean; ctrlKey: boolean }) => {
@@ -651,6 +660,7 @@ export function ChessboardProvider({
         setNewArrowStartSquare,
         setNewArrowOverSquare: setNewArrowOverSquareWithModifiers,
         internalArrows,
+        externalArrows,
         drawArrow,
         clearArrows,
       }}

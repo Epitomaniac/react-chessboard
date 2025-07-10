@@ -31,18 +31,8 @@ export const Arrows: Story = {
   render: () => {
     const [arrows, setArrows] = useState<Arrow[]>([]);
 
-    const generateRandomArrows = () => {
-      // Get 6 unique squares (3 pairs of start/end squares)
-      const uniqueSquares = getUniqueSquares(6);
-      const colors = ['#ff0000', '#2f8335', '#fcba03'];
-
-      const newArrows = Array.from({ length: 3 }, (_, index) => ({
-        startSquare: uniqueSquares[index * 2],
-        endSquare: uniqueSquares[index * 2 + 1],
-        color: colors[index],
-      }));
-
-      setArrows(newArrows);
+    const createExternalArrow = () => {
+      setArrows([{ startSquare: 'e2', endSquare: 'e4', color: 'red' }]);
     };
 
     function handleArrows(arrows: Arrow[]) {
@@ -67,13 +57,9 @@ export const Arrows: Story = {
           width: '50%',
         }}
       >
-        <button onClick={generateRandomArrows}>Generate Random Arrows</button>
+        <button onClick={createExternalArrow}> Create external arrow</button>
 
         <Chessboard options={chessboardOptions} />
-
-        <p style={{ fontSize: '0.8rem', color: '#666' }}>
-          Click the button to generate 3 random arrows on the board.
-        </p>
       </div>
     );
   },

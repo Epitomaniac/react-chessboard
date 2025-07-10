@@ -11,12 +11,12 @@ type Props = {
 export function Arrows({ boardWidth, boardHeight }: Props) {
   const {
     id,
-    arrows,
+    externalArrows,
+    internalArrows,
     arrowOptions,
     boardOrientation,
     chessboardColumns,
     chessboardRows,
-    internalArrows,
     newArrowStartSquare,
     newArrowOverSquare,
   } = useChessboardContext();
@@ -37,8 +37,8 @@ export function Arrows({ boardWidth, boardHeight }: Props) {
       : null;
 
   const arrowsToDraw = currentlyDrawingArrow
-    ? [...arrows, ...internalArrows, currentlyDrawingArrow]
-    : [...arrows, ...internalArrows];
+    ? [...externalArrows, ...internalArrows, currentlyDrawingArrow]
+    : [...externalArrows, ...internalArrows];
 
   return (
     <svg
