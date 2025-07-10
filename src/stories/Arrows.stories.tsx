@@ -45,8 +45,8 @@ export const Arrows: Story = {
       setArrows(newArrows);
     };
 
-    function handleArrows(arrow: Arrow[]) {
-      //console.log(arrow);
+    function handleArrows(arrows: Arrow[]) {
+      console.log(arrows);
     }
 
     // chessboard options
