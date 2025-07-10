@@ -29,11 +29,7 @@ const getUniqueSquares = (count: number) => {
 
 export const Arrows: Story = {
   render: () => {
-    const [arrows, setArrows] = useState([
-      { startSquare: 'e2', endSquare: 'e4', color: '#ff0000' },
-      { startSquare: 'g1', endSquare: 'f3', color: '#2f8335' },
-      { startSquare: 'c1', endSquare: 'g5', color: '#fcba03' },
-    ]);
+    const [arrows, setArrows] = useState<Arrow[]>([]);
 
     const generateRandomArrows = () => {
       // Get 6 unique squares (3 pairs of start/end squares)

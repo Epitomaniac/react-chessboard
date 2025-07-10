@@ -117,7 +117,7 @@ type ContextType = {
     square: string,
     modifiers?: { shiftKey: boolean; ctrlKey: boolean },
   ) => void;
-  drawnArrow: Arrow[];
+  internalArrows: Arrow[];
   drawArrow: (
     newArrowEndSquare: string,
     modifiers?: { shiftKey: boolean; ctrlKey: boolean },
@@ -176,7 +176,7 @@ export type ChessboardOptions = {
 
   // handlers
   canDragPiece?: ({ isSparePiece, piece, square }: PieceHandlerArgs) => boolean;
-  onArrowsChange?: (arrow: Arrow[]) => void;
+  onArrowsChange?: (arrows: Arrow[]) => void;
   onMouseOutSquare?: ({ piece, square }: SquareHandlerArgs) => void;
   onMouseOverSquare?: ({ piece, square }: SquareHandlerArgs) => void;
   onPieceClick?: ({ isSparePiece, piece, square }: PieceHandlerArgs) => void;
@@ -289,7 +289,7 @@ export function ChessboardProvider({
     square: string;
     color: string;
   } | null>(null);
-  const [drawnArrow, setDrawnArrow] = useState<Arrow[]>([]);
+  const [internalArrows, setInternalArrows] = useState<Arrow[]>([]);
 
   // position we are animating to, if a new position comes in before the animation completes, we will use this to set the new position
   const [waitingForAnimationPosition, setWaitingForAnimationPosition] =
@@ -400,10 +400,8 @@ export function ChessboardProvider({
 
   // if the arrows change, call the onArrowsChange callback
   useEffect(() => {
-    if (drawnArrow.length > 0) {
-      onArrowsChange?.(drawnArrow);
-    }
-  }, [drawnArrow]);
+    onArrowsChange?.(internalArrows);
+  }, [internalArrows]);
 
   // only redraw the board when the dimensions or board orientation change
   const board = useMemo(
@@ -420,6 +418,24 @@ export function ChessboardProvider({
         return;
       }
 
+      const arrowExistsIndex = internalArrows.findIndex(
+        (arrow) =>
+          arrow.startSquare === newArrowStartSquare &&
+          arrow.endSquare === newArrowEndSquare,
+      );
+      const arrowExistsExternally = arrows.some(
+        (arrow) =>
+          arrow.startSquare === newArrowStartSquare &&
+          arrow.endSquare === newArrowEndSquare,
+      );
+
+      // if the arrow already exists externally, don't add it to the internal arrows
+      if (arrowExistsExternally) {
+        setNewArrowStartSquare(null);
+        setNewArrowOverSquare(null);
+        return;
+      }
+
       // new arrow with different start and end square, add to internal arrows or remove if it already exists
       if (newArrowStartSquare && newArrowStartSquare !== newArrowEndSquare) {
         const arrowColor = modifiers?.shiftKey
@@ -428,13 +444,18 @@ export function ChessboardProvider({
             ? arrowOptions.tertiaryColor
             : arrowOptions.primaryColor;
 
-        setDrawnArrow([
-          {
-            startSquare: newArrowStartSquare,
-            endSquare: newArrowEndSquare,
-            color: arrowColor,
-          },
-        ]);
+        setInternalArrows((prevArrows) =>
+          arrowExistsIndex === -1
+            ? [
+                ...prevArrows,
+                {
+                  startSquare: newArrowStartSquare,
+                  endSquare: newArrowEndSquare,
+                  color: arrowColor,
+                },
+              ]
+            : prevArrows.filter((_, index) => index !== arrowExistsIndex),
+        );
         setNewArrowStartSquare(null);
         setNewArrowOverSquare(null);
       }
@@ -445,7 +466,7 @@ export function ChessboardProvider({
       arrowOptions.primaryColor,
       arrowOptions.secondaryColor,
       arrowOptions.tertiaryColor,
-      drawnArrow,
+      internalArrows,
       newArrowStartSquare,
       newArrowOverSquare,
     ],
@@ -453,7 +474,7 @@ export function ChessboardProvider({
 
   const clearArrows = useCallback(() => {
     if (clearArrowsOnClick) {
-      setDrawnArrow([]);
+      setInternalArrows([]);
       setNewArrowStartSquare(null);
       setNewArrowOverSquare(null);
     }
@@ -629,7 +650,7 @@ export function ChessboardProvider({
         newArrowOverSquare,
         setNewArrowStartSquare,
         setNewArrowOverSquare: setNewArrowOverSquareWithModifiers,
-        drawnArrow,
+        internalArrows,
         drawArrow,
         clearArrows,
       }}
