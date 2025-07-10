@@ -586,6 +586,7 @@ export function ChessboardProvider({
             sourceSquare: draggingPiece.position,
             targetSquare: dropSquare,
           });
+          clearArrows();
         }
         setDraggingPiece(null);
       }
