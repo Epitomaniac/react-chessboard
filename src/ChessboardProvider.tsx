@@ -243,7 +243,6 @@ export function ChessboardProvider({
     allowDrawingArrows = true,
     arrows = [],
     arrowOptions = defaultArrowOptions,
-    clearArrowsOnClick = true,
 
     // handlers
     canDragPiece,
@@ -447,10 +446,10 @@ export function ChessboardProvider({
       // new arrow with different start and end square, add to internal arrows or remove if it already exists
       if (newArrowStartSquare && newArrowStartSquare !== newArrowEndSquare) {
         const arrowColor = modifiers?.shiftKey
-          ? arrowOptions.secondaryColor
+          ? 'secondary'
           : modifiers?.ctrlKey
-            ? arrowOptions.tertiaryColor
-            : arrowOptions.primaryColor;
+            ? 'tertiary'
+            : 'primary';
 
         setInternalArrows((prevArrows) =>
           arrowExistsIndex === -1

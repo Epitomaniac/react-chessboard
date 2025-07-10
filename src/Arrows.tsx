@@ -110,6 +110,21 @@ export function Arrows({ boardWidth, boardHeight }: Props) {
           y: from.y + (dy * (r - ARROW_LENGTH_REDUCER)) / r,
         };
 
+        const resolveColor = (color: string | undefined) => {
+          switch (color) {
+            case 'primary':
+              return arrowOptions.primaryColor;
+            case 'secondary':
+              return arrowOptions.secondaryColor;
+            case 'tertiary':
+              return arrowOptions.tertiaryColor;
+            default:
+              return color ?? arrowOptions.primaryColor;
+          }
+        };
+
+        const color = resolveColor(arrow.color);
+
         return (
           <Fragment
             key={`${id}-arrow-${arrow.startSquare}-${arrow.endSquare}${
@@ -124,7 +139,7 @@ export function Arrows({ boardWidth, boardHeight }: Props) {
               refY="1.25"
               orient="auto"
             >
-              <polygon points="0.3 0, 2 1.25, 0.3 2.5" fill={arrow.color} />
+              <polygon points="0.3 0, 2 1.25, 0.3 2.5" fill={color} />
             </marker>
             <line
               x1={from.x}
@@ -136,7 +151,7 @@ export function Arrows({ boardWidth, boardHeight }: Props) {
                   ? arrowOptions.activeOpacity
                   : arrowOptions.opacity
               }
-              stroke={arrow.color}
+              stroke={color}
               strokeWidth={
                 isArrowActive
                   ? arrowOptions.activeArrowWidthMultiplier *
