@@ -50,6 +50,7 @@ export const Square = memo(function Square({
     onSquareRightClick,
     squareRenderer,
     newArrowStartSquare,
+    clearArrows,
     setNewArrowStartSquare,
     setNewArrowOverSquare,
     drawArrow,
@@ -93,6 +94,9 @@ export const Square = memo(function Square({
         }
       }}
       onMouseUp={(e) => {
+        if (e.button === 0) {
+          clearArrows();
+        }
         if (e.button === 2) {
           if (newArrowStartSquare) {
             drawArrow(squareId, {
