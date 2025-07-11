@@ -103,6 +103,9 @@ export const AnalysisBoard: Story = {
         }}
       >
         <Chessboard options={chessboardOptions} />
+        <p>*</p>
+        <p>*</p>
+        <p>*</p>
       </div>
     );
   },

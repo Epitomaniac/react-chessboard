@@ -5465,7 +5465,7 @@ function ChessboardProvider({ children, options, }) {
             externalArrows,
             drawArrow,
             clearArrows,
-        }, children: jsxRuntimeExports.jsx(DndContext, { collisionDetection: collisionDetection, onDragStart: handleDragStart, onDragEnd: handleDragEnd, onDragCancel: handleDragCancel, sensors: sensors, children: children }) }));
+        }, children: jsxRuntimeExports.jsx(DndContext, { collisionDetection: collisionDetection, autoScroll: false, onDragStart: handleDragStart, onDragEnd: handleDragEnd, onDragCancel: handleDragCancel, sensors: sensors, children: children }) }));
 }
 
 function Arrows({ boardWidth, boardHeight }) {

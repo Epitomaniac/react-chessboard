@@ -714,6 +714,7 @@ export function ChessboardProvider({
     >
       <DndContext
         collisionDetection={collisionDetection}
+        autoScroll={false}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
         onDragCancel={handleDragCancel}
