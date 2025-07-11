@@ -2,7 +2,6 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { useState } from 'react';
 
 import { Chessboard } from '../../src';
-import type { Arrow } from '../../src/types';
 
 const meta: Meta<typeof Chessboard> = {
   title: 'stories/Arrows',
@@ -13,7 +12,6 @@ type Story = StoryObj<typeof meta>;
 
 export const Arrows: Story = {
   render: () => {
-    const [arrows, setArrows] = useState<Arrow[]>([]);
     const [positionFen, setPositionFen] = useState<string>(
       'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
     );
@@ -27,7 +25,6 @@ export const Arrows: Story = {
     // chessboard options
     const chessboardOptions = {
       position: positionFen,
-      arrows,
     };
 
     // render

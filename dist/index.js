@@ -5180,6 +5180,7 @@ function ChessboardProvider({ children, options, }) {
     const animationTimeoutRef = React.useRef(null);
     // if the position changes, we need to recreate the pieces array
     React.useEffect(() => {
+        clearArrows();
         const newPosition = typeof position === 'string'
             ? fenStringToPositionObject(position, chessboardRows, chessboardColumns)
             : position;
@@ -5267,36 +5268,50 @@ function ChessboardProvider({ children, options, }) {
         if (!allowDrawingArrows) {
             return;
         }
-        const arrowExistsIndex = internalArrows.findIndex((arrow) => arrow.startSquare === newArrowStartSquare &&
-            arrow.endSquare === newArrowEndSquare);
-        const arrowExistsExternally = externalArrows.some((arrow) => arrow.startSquare === newArrowStartSquare &&
-            arrow.endSquare === newArrowEndSquare);
-        // if the arrow already exists externally, don't add it to the internal arrows
-        if (arrowExistsExternally) {
+        const allArrows = [...externalArrows, ...internalArrows];
+        const arrowColor = modifiers?.shiftKey
+            ? 'secondary'
+            : modifiers?.ctrlKey
+                ? 'tertiary'
+                : 'primary';
+        const arrowExists = allArrows.some((arrow) => arrow.startSquare === newArrowStartSquare &&
+            arrow.endSquare === newArrowEndSquare &&
+            arrow.color === arrowColor);
+        const arrowExistsWithDifferentColor = allArrows.some((arrow) => arrow.startSquare === newArrowStartSquare &&
+            arrow.endSquare === newArrowEndSquare &&
+            arrow.color !== arrowColor);
+        // if the arrow already exists, clear it
+        if (arrowExists) {
+            setInternalArrows((prev) => prev.filter((arrow) => !(arrow.startSquare === newArrowStartSquare &&
+                arrow.endSquare === newArrowEndSquare &&
+                arrow.color === arrowColor)));
+            setExternalArrows((prev) => prev.filter((arrow) => !(arrow.startSquare === newArrowStartSquare &&
+                arrow.endSquare === newArrowEndSquare &&
+                arrow.color === arrowColor)));
             setNewArrowStartSquare(null);
             setNewArrowOverSquare(null);
             return;
         }
-        // new arrow with different start and end square, add to internal arrows or remove if it already exists
-        if (newArrowStartSquare && newArrowStartSquare !== newArrowEndSquare) {
-            const arrowColor = modifiers?.shiftKey
-                ? 'secondary'
-                : modifiers?.ctrlKey
-                    ? 'tertiary'
-                    : 'primary';
-            setInternalArrows((prevArrows) => arrowExistsIndex === -1
-                ? [
-                    ...prevArrows,
-                    {
-                        startSquare: newArrowStartSquare,
-                        endSquare: newArrowEndSquare,
-                        color: arrowColor,
-                    },
-                ]
-                : prevArrows.filter((_, index) => index !== arrowExistsIndex));
-            setNewArrowStartSquare(null);
-            setNewArrowOverSquare(null);
+        // if the arrow exists with a different color, overwrite it
+        if (arrowExistsWithDifferentColor) {
+            setInternalArrows((prev) => prev.filter((arrow) => !(arrow.startSquare === newArrowStartSquare &&
+                arrow.endSquare === newArrowEndSquare)));
+            setExternalArrows((prev) => prev.filter((arrow) => !(arrow.startSquare === newArrowStartSquare &&
+                arrow.endSquare === newArrowEndSquare)));
         }
+        // new arrow with different start and end square, add to internal arrows
+        if (newArrowStartSquare && newArrowStartSquare !== newArrowEndSquare) {
+            setInternalArrows((prevArrows) => [
+                ...prevArrows,
+                {
+                    startSquare: newArrowStartSquare,
+                    endSquare: newArrowEndSquare,
+                    color: arrowColor,
+                },
+            ]);
+        }
+        setNewArrowStartSquare(null);
+        setNewArrowOverSquare(null);
     }, [
         allowDrawingArrows,
         externalArrows,
@@ -5360,6 +5375,7 @@ function ChessboardProvider({ children, options, }) {
                     sourceSquare: draggingPiece.position,
                     targetSquare: dropSquare,
                 });
+                clearArrows();
             }
             setDraggingPiece(null);
         }
@@ -5632,13 +5648,13 @@ const Square = React.memo(function Square({ children, squareId, isLightSquare, i
                 square: squareId,
             });
         }, onMouseDown: (e) => {
-            if (e.button === 0) {
-                clearArrows();
-            }
             if (e.button === 2 && allowDrawingArrows) {
                 setNewArrowStartSquare(squareId);
             }
         }, onMouseUp: (e) => {
+            if (e.button === 0) {
+                clearArrows();
+            }
             if (e.button === 2) {
                 if (newArrowStartSquare) {
                     drawArrow(squareId, {
