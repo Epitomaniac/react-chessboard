@@ -5262,10 +5262,12 @@ function ChessboardProvider({ children, options, }) {
     }, [arrows]);
     // if the arrows change, call the onArrowsChange callback
     React.useEffect(() => {
-        onArrowsChange?.([...externalArrows, ...internalArrows]);
+        const filteredExternalArrows = externalArrows.filter((arrow) => arrow.color !== 'engine');
+        onArrowsChange?.([...filteredExternalArrows, ...internalArrows]);
     }, [externalArrows, internalArrows]);
     function clearArrows() {
         setInternalArrows([]);
+        setExternalArrows([]);
         setNewArrowStartSquare(null);
         setNewArrowOverSquare(null);
     }
@@ -5637,7 +5639,7 @@ const Piece = React.memo(function Piece({ clone, isSparePiece = false, position,
 });
 
 const Square = React.memo(function Square({ children, squareId, isLightSquare, isOver, }) {
-    const { id, allowDrawingArrows, boardOrientation, chessboardColumns, chessboardRows, currentPosition, squareStyle, squareStyles, darkSquareStyle, lightSquareStyle, dropSquareStyle, darkSquareNotationStyle, lightSquareNotationStyle, alphaNotationStyle, numericNotationStyle, showNotation, onMouseOutSquare, onMouseOverSquare, onSquareClick, onSquareRightClick, squareRenderer, newArrowStartSquare, setNewArrowStartSquare, setNewArrowOverSquare, drawArrow, clearArrows, } = useChessboardContext();
+    const { id, allowDrawingArrows, boardOrientation, chessboardColumns, chessboardRows, currentPosition, squareStyle, squareStyles, darkSquareStyle, lightSquareStyle, dropSquareStyle, darkSquareNotationStyle, lightSquareNotationStyle, alphaNotationStyle, numericNotationStyle, showNotation, onMouseOutSquare, onMouseOverSquare, onSquareClick, onSquareRightClick, squareRenderer, newArrowStartSquare, setNewArrowStartSquare, setNewArrowOverSquare, drawArrow, } = useChessboardContext();
     const column = squareId.match(/^[a-z]+/)?.[0];
     const row = squareId.match(/\d+$/)?.[0];
     return (jsxRuntimeExports.jsxs("div", { id: `${id}-square-${squareId}`, style: {
@@ -5665,9 +5667,6 @@ const Square = React.memo(function Square({ children, squareId, isLightSquare, i
                 setNewArrowStartSquare(squareId);
             }
         }, onMouseUp: (e) => {
-            if (e.button === 0) {
-                clearArrows();
-            }
             if (e.button === 2) {
                 if (newArrowStartSquare) {
                     drawArrow(squareId, {

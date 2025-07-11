@@ -413,11 +413,15 @@ export function ChessboardProvider({
 
   // if the arrows change, call the onArrowsChange callback
   useEffect(() => {
-    onArrowsChange?.([...externalArrows, ...internalArrows]);
+    const filteredExternalArrows = externalArrows.filter(
+      (arrow) => arrow.color !== 'engine',
+    );
+    onArrowsChange?.([...filteredExternalArrows, ...internalArrows]);
   }, [externalArrows, internalArrows]);
 
   function clearArrows() {
     setInternalArrows([]);
+    setExternalArrows([]);
     setNewArrowStartSquare(null);
     setNewArrowOverSquare(null);
   }

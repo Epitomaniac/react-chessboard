@@ -53,7 +53,6 @@ export const Square = memo(function Square({
     setNewArrowStartSquare,
     setNewArrowOverSquare,
     drawArrow,
-    clearArrows,
   } = useChessboardContext();
 
   const column = squareId.match(/^[a-z]+/)?.[0];
@@ -94,9 +93,6 @@ export const Square = memo(function Square({
         }
       }}
       onMouseUp={(e) => {
-        if (e.button === 0) {
-          clearArrows();
-        }
         if (e.button === 2) {
           if (newArrowStartSquare) {
             drawArrow(squareId, {
