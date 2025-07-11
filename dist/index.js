@@ -5264,14 +5264,11 @@ function ChessboardProvider({ children, options, }) {
     React.useEffect(() => {
         onArrowsChange?.([...externalArrows, ...internalArrows]);
     }, [externalArrows, internalArrows]);
-    const clearArrows = React.useCallback(() => {
-        if (allowDrawingArrows) {
-            setInternalArrows([]);
-            setExternalArrows([]);
-            setNewArrowStartSquare(null);
-            setNewArrowOverSquare(null);
-        }
-    }, [allowDrawingArrows]);
+    function clearArrows() {
+        setInternalArrows([]);
+        setNewArrowStartSquare(null);
+        setNewArrowOverSquare(null);
+    }
     const drawArrow = React.useCallback((newArrowEndSquare, modifiers) => {
         if (!allowDrawingArrows) {
             return;
@@ -5376,7 +5373,6 @@ function ChessboardProvider({ children, options, }) {
                     sourceSquare: draggingPiece.position,
                     targetSquare: dropSquare,
                 });
-                clearArrows();
             }
             setDraggingPiece(null);
         }

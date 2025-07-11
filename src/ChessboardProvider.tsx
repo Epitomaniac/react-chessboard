@@ -416,14 +416,11 @@ export function ChessboardProvider({
     onArrowsChange?.([...externalArrows, ...internalArrows]);
   }, [externalArrows, internalArrows]);
 
-  const clearArrows = useCallback(() => {
-    if (allowDrawingArrows) {
-      setInternalArrows([]);
-      setExternalArrows([]);
-      setNewArrowStartSquare(null);
-      setNewArrowOverSquare(null);
-    }
-  }, [allowDrawingArrows]);
+  function clearArrows() {
+    setInternalArrows([]);
+    setNewArrowStartSquare(null);
+    setNewArrowOverSquare(null);
+  }
 
   const drawArrow = useCallback(
     (
@@ -587,7 +584,6 @@ export function ChessboardProvider({
             sourceSquare: draggingPiece.position,
             targetSquare: dropSquare,
           });
-          clearArrows();
         }
         setDraggingPiece(null);
       }

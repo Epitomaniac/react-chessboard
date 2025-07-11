@@ -5262,14 +5262,11 @@ function ChessboardProvider({ children, options, }) {
     useEffect(() => {
         onArrowsChange?.([...externalArrows, ...internalArrows]);
     }, [externalArrows, internalArrows]);
-    const clearArrows = useCallback(() => {
-        if (allowDrawingArrows) {
-            setInternalArrows([]);
-            setExternalArrows([]);
-            setNewArrowStartSquare(null);
-            setNewArrowOverSquare(null);
-        }
-    }, [allowDrawingArrows]);
+    function clearArrows() {
+        setInternalArrows([]);
+        setNewArrowStartSquare(null);
+        setNewArrowOverSquare(null);
+    }
     const drawArrow = useCallback((newArrowEndSquare, modifiers) => {
         if (!allowDrawingArrows) {
             return;
@@ -5374,7 +5371,6 @@ function ChessboardProvider({ children, options, }) {
                     sourceSquare: draggingPiece.position,
                     targetSquare: dropSquare,
                 });
-                clearArrows();
             }
             setDraggingPiece(null);
         }
