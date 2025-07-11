@@ -5264,8 +5264,9 @@ function ChessboardProvider({ children, options, }) {
         onArrowsChange?.([...filteredExternalArrows, ...internalArrows]);
     }, [externalArrows, internalArrows]);
     function clearArrows() {
+        const filteredExternalArrows = externalArrows.filter((arrow) => arrow.color === 'engine');
         setInternalArrows([]);
-        setExternalArrows([]);
+        setExternalArrows(filteredExternalArrows);
         setNewArrowStartSquare(null);
         setNewArrowOverSquare(null);
     }

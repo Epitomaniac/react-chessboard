@@ -420,8 +420,11 @@ export function ChessboardProvider({
   }, [externalArrows, internalArrows]);
 
   function clearArrows() {
+    const filteredExternalArrows = externalArrows.filter(
+      (arrow) => arrow.color === 'engine',
+    );
     setInternalArrows([]);
-    setExternalArrows([]);
+    setExternalArrows(filteredExternalArrows);
     setNewArrowStartSquare(null);
     setNewArrowOverSquare(null);
   }
