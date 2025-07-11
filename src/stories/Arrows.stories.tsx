@@ -14,36 +14,20 @@ type Story = StoryObj<typeof meta>;
 export const Arrows: Story = {
   render: () => {
     const [arrows, setArrows] = useState<Arrow[]>([]);
-    const [primaryColor, setPrimaryColor] = useState<string>('#ff0000');
-
-    const createExternalArrow = () => {
-      setArrows([{ startSquare: 'e2', endSquare: 'e4', color: 'primary' }]);
-    };
-
-    function handleArrows(arrows: Arrow[]) {
-      console.log(arrows);
-    }
+    const [positionFen, setPositionFen] = useState<string>(
+      'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+    );
 
     function changePrimaryColor() {
-      setPrimaryColor('purple');
+      setPositionFen(
+        'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1',
+      );
     }
 
     // chessboard options
     const chessboardOptions = {
+      position: positionFen,
       arrows,
-      arrowOptions: {
-        primaryColor: primaryColor,
-        secondaryColor: '#2f8335',
-        tertiaryColor: '#fcba03',
-        arrowLengthReducerDenominator: 8,
-        sameTargetArrowLengthReducerDenominator: 4,
-        arrowWidthDenominator: 5,
-        activeArrowWidthMultiplier: 0.9,
-        opacity: 0.65,
-        activeOpacity: 0.5,
-      },
-      onArrowsChange: handleArrows,
-      id: 'arrows',
     };
 
     // render
@@ -58,11 +42,13 @@ export const Arrows: Story = {
         }}
       >
         <div style={{ display: 'flex', gap: '10px' }}>
-          <button onClick={createExternalArrow}>Create external arrow</button>
-          <button onClick={changePrimaryColor}>Change arrow color</button>
+          <button onClick={changePrimaryColor}>Change position</button>
         </div>
 
         <Chessboard options={chessboardOptions} />
+        <p>*</p>
+        <p>*</p>
+        <p>*</p>
       </div>
     );
   },
