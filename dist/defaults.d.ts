@@ -13,6 +13,7 @@ export declare const defaultArrowOptions: {
     primaryColor: string;
     secondaryColor: string;
     tertiaryColor: string;
+    engineColor: string;
     arrowLengthReducerDenominator: number;
     sameTargetArrowLengthReducerDenominator: number;
     arrowWidthDenominator: number;

@@ -400,10 +400,15 @@ export function ChessboardProvider({
     );
   }, [chessboardRows, chessboardColumns, boardOrientation]);
 
+  // only redraw the board when the dimensions or board orientation change
+  const board = useMemo(
+    () => generateBoard(chessboardRows, chessboardColumns, boardOrientation),
+    [chessboardRows, chessboardColumns, boardOrientation],
+  );
+
   // acts as an event listener for the chessboard's arrows prop
   useEffect(() => {
     setExternalArrows(arrows);
-    setInternalArrows([]); // external arrows should act at the single source of truth
   }, [arrows]);
 
   // if the arrows change, call the onArrowsChange callback
@@ -411,11 +416,14 @@ export function ChessboardProvider({
     onArrowsChange?.([...externalArrows, ...internalArrows]);
   }, [externalArrows, internalArrows]);
 
-  // only redraw the board when the dimensions or board orientation change
-  const board = useMemo(
-    () => generateBoard(chessboardRows, chessboardColumns, boardOrientation),
-    [chessboardRows, chessboardColumns, boardOrientation],
-  );
+  const clearArrows = useCallback(() => {
+    if (allowDrawingArrows) {
+      setInternalArrows([]);
+      setExternalArrows([]);
+      setNewArrowStartSquare(null);
+      setNewArrowOverSquare(null);
+    }
+  }, [allowDrawingArrows]);
 
   const drawArrow = useCallback(
     (
@@ -444,7 +452,8 @@ export function ChessboardProvider({
         (arrow) =>
           arrow.startSquare === newArrowStartSquare &&
           arrow.endSquare === newArrowEndSquare &&
-          arrow.color !== arrowColor,
+          arrow.color !== arrowColor &&
+          arrow.color !== 'engine',
       );
 
       // if the arrow already exists, clear it
@@ -522,15 +531,6 @@ export function ChessboardProvider({
       newArrowOverSquare,
     ],
   );
-
-  const clearArrows = useCallback(() => {
-    if (allowDrawingArrows) {
-      setInternalArrows([]);
-      setExternalArrows([]);
-      setNewArrowStartSquare(null);
-      setNewArrowOverSquare(null);
-    }
-  }, [allowDrawingArrows]);
 
   const setNewArrowOverSquareWithModifiers = useCallback(
     (square: string, modifiers?: { shiftKey: boolean; ctrlKey: boolean }) => {

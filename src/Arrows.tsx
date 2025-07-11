@@ -21,10 +21,11 @@ export function Arrows({ boardWidth, boardHeight }: Props) {
     newArrowOverSquare,
   } = useChessboardContext();
 
-  if (!boardWidth) {
-    return null;
-  }
+  if (!boardWidth) return null;
 
+  // ---------------------------------------------------------------------------
+  // 1 · Work out whether the user is currently dragging/drawing an arrow
+  // ---------------------------------------------------------------------------
   const currentlyDrawingArrow =
     newArrowStartSquare &&
     newArrowOverSquare &&
@@ -36,20 +37,50 @@ export function Arrows({ boardWidth, boardHeight }: Props) {
         }
       : null;
 
-  const arrowsToDraw = currentlyDrawingArrow
-    ? [...externalArrows, ...internalArrows, currentlyDrawingArrow]
-    : [...externalArrows, ...internalArrows];
+  // ---------------------------------------------------------------------------
+  // 2 · Merge and deduplicate, giving precedence to arrows with color “engine”
+  // ---------------------------------------------------------------------------
+  const combined = [...externalArrows, ...internalArrows];
+  const byKey = new Map<string, (typeof combined)[number]>();
 
+  for (const arrow of combined) {
+    const key = `${arrow.startSquare}-${arrow.endSquare}`;
+    const existing = byKey.get(key);
+
+    if (arrow.color === 'engine' || !existing || existing.color !== 'engine') {
+      byKey.set(key, arrow); // engine overwrites, others set if empty
+    }
+  }
+
+  if (currentlyDrawingArrow) {
+    byKey.set(
+      `${currentlyDrawingArrow.startSquare}-${currentlyDrawingArrow.endSquare}`,
+      {
+        ...currentlyDrawingArrow,
+        color: currentlyDrawingArrow.color as
+          | 'primary'
+          | 'secondary'
+          | 'tertiary'
+          | 'engine',
+      },
+    );
+  }
+
+  const arrowsToDraw = Array.from(byKey.values());
+
+  // ---------------------------------------------------------------------------
+  // 3 · Render
+  // ---------------------------------------------------------------------------
   return (
     <svg
       width={boardWidth}
       height={boardHeight}
       style={{
         position: 'absolute',
-        top: '0',
-        left: '0',
+        top: 0,
+        left: 0,
         pointerEvents: 'none',
-        zIndex: '20', // place above pieces
+        zIndex: 20, // above pieces
       }}
     >
       {arrowsToDraw.map((arrow, i) => {
@@ -68,20 +99,21 @@ export function Arrows({ boardWidth, boardHeight }: Props) {
           arrow.endSquare,
         );
 
-        // we want to shorten the arrow length so the tip of the arrow is more central to the target square instead of running over the center
+        // --- shorten arrow so its tip is roughly centred in the target square
         const squareWidth = boardWidth / chessboardColumns;
         let ARROW_LENGTH_REDUCER =
           squareWidth / arrowOptions.arrowLengthReducerDenominator;
 
         const isArrowActive =
-          currentlyDrawingArrow && i === arrowsToDraw.length - 1;
+          currentlyDrawingArrow &&
+          arrow.startSquare === currentlyDrawingArrow.startSquare &&
+          arrow.endSquare === currentlyDrawingArrow.endSquare;
 
-        // if there are different arrows targeting the same square make their length a bit shorter
+        // if multiple arrows end on the same square (but are not the active one),
+        // shorten them a bit more so they don’t overlap as badly
         if (
           arrowsToDraw.some(
-            (restArrow) =>
-              restArrow.startSquare !== arrow.startSquare &&
-              restArrow.endSquare === arrow.endSquare,
+            (rest) => rest !== arrow && rest.endSquare === arrow.endSquare,
           ) &&
           !isArrowActive
         ) {
@@ -89,41 +121,31 @@ export function Arrows({ boardWidth, boardHeight }: Props) {
             squareWidth / arrowOptions.sameTargetArrowLengthReducerDenominator;
         }
 
-        // Calculate the difference in x and y coordinates between start and end points
+        // work out the shortened end‑point
         const dx = to.x - from.x;
         const dy = to.y - from.y;
-
-        // Calculate the total distance between points using Pythagorean theorem
-        // This gives us the length of the arrow if it went from center to center
-        const r = Math.hypot(dy, dx);
-
-        // Calculate the new end point for the arrow
-        // We subtract ARROW_LENGTH_REDUCER from the total distance to make the arrow
-        // stop before reaching the center of the target square
+        const r = Math.hypot(dx, dy);
         const end = {
-          // Calculate new end x coordinate by:
-          // 1. Taking the original x direction (dx)
-          // 2. Scaling it by (r - ARROW_LENGTH_REDUCER) / r to shorten it
-          // 3. Adding to the starting x coordinate
           x: from.x + (dx * (r - ARROW_LENGTH_REDUCER)) / r,
-          // Same calculation for y coordinate
           y: from.y + (dy * (r - ARROW_LENGTH_REDUCER)) / r,
         };
 
-        const resolveColor = (color: string | undefined) => {
-          switch (color) {
+        // map the “logical” colour names to actual CSS colours
+        const resolveColor = (c: string | undefined) => {
+          switch (c) {
             case 'primary':
               return arrowOptions.primaryColor;
             case 'secondary':
               return arrowOptions.secondaryColor;
             case 'tertiary':
               return arrowOptions.tertiaryColor;
+            case 'engine':
+              return arrowOptions.engineColor;
             default:
-              return color ?? arrowOptions.primaryColor;
+              return c ?? arrowOptions.primaryColor;
           }
         };
-
-        const color = resolveColor(arrow.color);
+        const stroke = resolveColor(arrow.color);
 
         return (
           <Fragment
@@ -139,8 +161,9 @@ export function Arrows({ boardWidth, boardHeight }: Props) {
               refY="1.25"
               orient="auto"
             >
-              <polygon points="0.3 0, 2 1.25, 0.3 2.5" fill={color} />
+              <polygon points="0.3 0, 2 1.25, 0.3 2.5" fill={stroke} />
             </marker>
+
             <line
               x1={from.x}
               y1={from.y}
@@ -151,7 +174,7 @@ export function Arrows({ boardWidth, boardHeight }: Props) {
                   ? arrowOptions.activeOpacity
                   : arrowOptions.opacity
               }
-              stroke={color}
+              stroke={stroke}
               strokeWidth={
                 isArrowActive
                   ? arrowOptions.activeArrowWidthMultiplier *

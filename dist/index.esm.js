@@ -5127,6 +5127,7 @@ const defaultArrowOptions = {
     primaryColor: '#ff0000', // color if no modifiers are held down when drawing an arrow
     secondaryColor: '#2f8335', // color if shift is held down when drawing an arrow
     tertiaryColor: '#fcba03', // color if control is held down when drawing an arrow
+    engineColor: '#7500c9ff',
     arrowLengthReducerDenominator: 8, // the lower the denominator, the greater the arrow length reduction (e.g. 8 = 1/8 of a square width removed, 4 = 1/4 of a square width removed)
     sameTargetArrowLengthReducerDenominator: 4, // as above but for arrows targeting the same square (a greater reduction is used to avoid overlaps)
     arrowWidthDenominator: 5, // the lower the denominator, the greater the arrow width (e.g. 5 = 1/5 of a square width, 10 = 1/10 of a square width)
@@ -5251,17 +5252,24 @@ function ChessboardProvider({ children, options, }) {
             ? fenStringToPositionObject(position, chessboardRows, chessboardColumns)
             : position);
     }, [chessboardRows, chessboardColumns, boardOrientation]);
+    // only redraw the board when the dimensions or board orientation change
+    const board = useMemo(() => generateBoard(chessboardRows, chessboardColumns, boardOrientation), [chessboardRows, chessboardColumns, boardOrientation]);
     // acts as an event listener for the chessboard's arrows prop
     useEffect(() => {
         setExternalArrows(arrows);
-        setInternalArrows([]); // external arrows should act at the single source of truth
     }, [arrows]);
     // if the arrows change, call the onArrowsChange callback
     useEffect(() => {
         onArrowsChange?.([...externalArrows, ...internalArrows]);
     }, [externalArrows, internalArrows]);
-    // only redraw the board when the dimensions or board orientation change
-    const board = useMemo(() => generateBoard(chessboardRows, chessboardColumns, boardOrientation), [chessboardRows, chessboardColumns, boardOrientation]);
+    const clearArrows = useCallback(() => {
+        if (allowDrawingArrows) {
+            setInternalArrows([]);
+            setExternalArrows([]);
+            setNewArrowStartSquare(null);
+            setNewArrowOverSquare(null);
+        }
+    }, [allowDrawingArrows]);
     const drawArrow = useCallback((newArrowEndSquare, modifiers) => {
         if (!allowDrawingArrows) {
             return;
@@ -5277,7 +5285,8 @@ function ChessboardProvider({ children, options, }) {
             arrow.color === arrowColor);
         const arrowExistsWithDifferentColor = allArrows.some((arrow) => arrow.startSquare === newArrowStartSquare &&
             arrow.endSquare === newArrowEndSquare &&
-            arrow.color !== arrowColor);
+            arrow.color !== arrowColor &&
+            arrow.color !== 'engine');
         // if the arrow already exists, clear it
         if (arrowExists) {
             setInternalArrows((prev) => prev.filter((arrow) => !(arrow.startSquare === newArrowStartSquare &&
@@ -5320,14 +5329,6 @@ function ChessboardProvider({ children, options, }) {
         newArrowStartSquare,
         newArrowOverSquare,
     ]);
-    const clearArrows = useCallback(() => {
-        if (allowDrawingArrows) {
-            setInternalArrows([]);
-            setExternalArrows([]);
-            setNewArrowStartSquare(null);
-            setNewArrowOverSquare(null);
-        }
-    }, [allowDrawingArrows]);
     const setNewArrowOverSquareWithModifiers = useCallback((square, modifiers) => {
         const color = modifiers?.shiftKey
             ? arrowOptions.secondaryColor
@@ -5470,9 +5471,11 @@ function ChessboardProvider({ children, options, }) {
 
 function Arrows({ boardWidth, boardHeight }) {
     const { id, externalArrows, internalArrows, arrowOptions, boardOrientation, chessboardColumns, chessboardRows, newArrowStartSquare, newArrowOverSquare, } = useChessboardContext();
-    if (!boardWidth) {
+    if (!boardWidth)
         return null;
-    }
+    // ---------------------------------------------------------------------------
+    // 1 · Work out whether the user is currently dragging/drawing an arrow
+    // ---------------------------------------------------------------------------
     const currentlyDrawingArrow = newArrowStartSquare &&
         newArrowOverSquare &&
         newArrowStartSquare !== newArrowOverSquare.square
@@ -5482,63 +5485,77 @@ function Arrows({ boardWidth, boardHeight }) {
             color: newArrowOverSquare.color,
         }
         : null;
-    const arrowsToDraw = currentlyDrawingArrow
-        ? [...externalArrows, ...internalArrows, currentlyDrawingArrow]
-        : [...externalArrows, ...internalArrows];
+    // ---------------------------------------------------------------------------
+    // 2 · Merge and deduplicate, giving precedence to arrows with color “engine”
+    // ---------------------------------------------------------------------------
+    const combined = [...externalArrows, ...internalArrows];
+    const byKey = new Map();
+    for (const arrow of combined) {
+        const key = `${arrow.startSquare}-${arrow.endSquare}`;
+        const existing = byKey.get(key);
+        if (arrow.color === 'engine' || !existing || existing.color !== 'engine') {
+            byKey.set(key, arrow); // engine overwrites, others set if empty
+        }
+    }
+    if (currentlyDrawingArrow) {
+        byKey.set(`${currentlyDrawingArrow.startSquare}-${currentlyDrawingArrow.endSquare}`, {
+            ...currentlyDrawingArrow,
+            color: currentlyDrawingArrow.color,
+        });
+    }
+    const arrowsToDraw = Array.from(byKey.values());
+    // ---------------------------------------------------------------------------
+    // 3 · Render
+    // ---------------------------------------------------------------------------
     return (jsxRuntimeExports.jsx("svg", { width: boardWidth, height: boardHeight, style: {
             position: 'absolute',
-            top: '0',
-            left: '0',
+            top: 0,
+            left: 0,
             pointerEvents: 'none',
-            zIndex: '20', // place above pieces
+            zIndex: 20, // above pieces
         }, children: arrowsToDraw.map((arrow, i) => {
             const from = getRelativeCoords(boardOrientation, boardWidth, chessboardColumns, chessboardRows, arrow.startSquare);
             const to = getRelativeCoords(boardOrientation, boardWidth, chessboardColumns, chessboardRows, arrow.endSquare);
-            // we want to shorten the arrow length so the tip of the arrow is more central to the target square instead of running over the center
+            // --- shorten arrow so its tip is roughly centred in the target square
             const squareWidth = boardWidth / chessboardColumns;
             let ARROW_LENGTH_REDUCER = squareWidth / arrowOptions.arrowLengthReducerDenominator;
-            const isArrowActive = currentlyDrawingArrow && i === arrowsToDraw.length - 1;
-            // if there are different arrows targeting the same square make their length a bit shorter
-            if (arrowsToDraw.some((restArrow) => restArrow.startSquare !== arrow.startSquare &&
-                restArrow.endSquare === arrow.endSquare) &&
+            const isArrowActive = currentlyDrawingArrow &&
+                arrow.startSquare === currentlyDrawingArrow.startSquare &&
+                arrow.endSquare === currentlyDrawingArrow.endSquare;
+            // if multiple arrows end on the same square (but are not the active one),
+            // shorten them a bit more so they don’t overlap as badly
+            if (arrowsToDraw.some((rest) => rest !== arrow && rest.endSquare === arrow.endSquare) &&
                 !isArrowActive) {
                 ARROW_LENGTH_REDUCER =
                     squareWidth / arrowOptions.sameTargetArrowLengthReducerDenominator;
             }
-            // Calculate the difference in x and y coordinates between start and end points
+            // work out the shortened end‑point
             const dx = to.x - from.x;
             const dy = to.y - from.y;
-            // Calculate the total distance between points using Pythagorean theorem
-            // This gives us the length of the arrow if it went from center to center
-            const r = Math.hypot(dy, dx);
-            // Calculate the new end point for the arrow
-            // We subtract ARROW_LENGTH_REDUCER from the total distance to make the arrow
-            // stop before reaching the center of the target square
+            const r = Math.hypot(dx, dy);
             const end = {
-                // Calculate new end x coordinate by:
-                // 1. Taking the original x direction (dx)
-                // 2. Scaling it by (r - ARROW_LENGTH_REDUCER) / r to shorten it
-                // 3. Adding to the starting x coordinate
                 x: from.x + (dx * (r - ARROW_LENGTH_REDUCER)) / r,
-                // Same calculation for y coordinate
                 y: from.y + (dy * (r - ARROW_LENGTH_REDUCER)) / r,
             };
-            const resolveColor = (color) => {
-                switch (color) {
+            // map the “logical” colour names to actual CSS colours
+            const resolveColor = (c) => {
+                switch (c) {
                     case 'primary':
                         return arrowOptions.primaryColor;
                     case 'secondary':
                         return arrowOptions.secondaryColor;
                     case 'tertiary':
                         return arrowOptions.tertiaryColor;
+                    case 'engine':
+                        return arrowOptions.engineColor;
                     default:
-                        return color ?? arrowOptions.primaryColor;
+                        return c ?? arrowOptions.primaryColor;
                 }
             };
-            const color = resolveColor(arrow.color);
-            return (jsxRuntimeExports.jsxs(Fragment, { children: [jsxRuntimeExports.jsx("marker", { id: `${id}-arrowhead-${i}-${arrow.startSquare}-${arrow.endSquare}`, markerWidth: "2", markerHeight: "2.5", refX: "1.25", refY: "1.25", orient: "auto", children: jsxRuntimeExports.jsx("polygon", { points: "0.3 0, 2 1.25, 0.3 2.5", fill: color }) }), jsxRuntimeExports.jsx("line", { x1: from.x, y1: from.y, x2: end.x, y2: end.y, opacity: isArrowActive
+            const stroke = resolveColor(arrow.color);
+            return (jsxRuntimeExports.jsxs(Fragment, { children: [jsxRuntimeExports.jsx("marker", { id: `${id}-arrowhead-${i}-${arrow.startSquare}-${arrow.endSquare}`, markerWidth: "2", markerHeight: "2.5", refX: "1.25", refY: "1.25", orient: "auto", children: jsxRuntimeExports.jsx("polygon", { points: "0.3 0, 2 1.25, 0.3 2.5", fill: stroke }) }), jsxRuntimeExports.jsx("line", { x1: from.x, y1: from.y, x2: end.x, y2: end.y, opacity: isArrowActive
                             ? arrowOptions.activeOpacity
-                            : arrowOptions.opacity, stroke: color, strokeWidth: isArrowActive
+                            : arrowOptions.opacity, stroke: stroke, strokeWidth: isArrowActive
                             ? arrowOptions.activeArrowWidthMultiplier *
                                 (squareWidth / arrowOptions.arrowWidthDenominator)
                             : squareWidth / arrowOptions.arrowWidthDenominator, markerEnd: `url(#${id}-arrowhead-${i}-${arrow.startSquare}-${arrow.endSquare})` })] }, `${id}-arrow-${arrow.startSquare}-${arrow.endSquare}${isArrowActive ? '-active' : ''}`));
