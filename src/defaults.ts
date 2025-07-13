@@ -2,7 +2,8 @@ export function defaultBoardStyle(): React.CSSProperties {
   return {
     display: 'grid',
     gridTemplateColumns: `repeat(8, 1fr)`,
-    overflow: 'hidden',
+    overflow: 'clip',
+    overflowClipMargin: '14px',
     width: '100%',
     height: '100%',
     position: 'relative',
@@ -30,18 +31,18 @@ export const defaultDropSquareStyle: React.CSSProperties = {
 };
 
 export const defaultDarkSquareNotationStyle: React.CSSProperties = {
-  color: '#F0D9B5',
+  color: '#ebe0cfff',
 };
 
 export const defaultLightSquareNotationStyle: React.CSSProperties = {
-  color: '#B58863',
+  color: '#a36c3fff',
 };
 
 export const defaultAlphaNotationStyle: React.CSSProperties = {
   fontSize: '13px',
   position: 'absolute',
   bottom: 1,
-  right: 4,
+  left: 2,
   userSelect: 'none',
 };
 
@@ -49,7 +50,7 @@ export const defaultNumericNotationStyle: React.CSSProperties = {
   fontSize: '13px',
   position: 'absolute',
   top: 2,
-  left: 2,
+  right: 2,
   userSelect: 'none',
 };
 

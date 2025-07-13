@@ -1,139 +1,105 @@
 import { getPositionUpdates } from './utils';
-import {
-  Arrow,
-  SquareDataType,
-  DraggingPieceDataType,
-  PieceDropHandlerArgs,
-  PieceHandlerArgs,
-  PieceRenderObject,
-  PositionDataType,
-  SquareHandlerArgs,
-} from './types';
-import { defaultArrowOptions } from './defaults';
+import { Arrow, Highlight, SquareDataType, DraggingPieceDataType, PieceDropHandlerArgs, PieceHandlerArgs, PieceRenderObject, PositionDataType, SquareHandlerArgs, SquareArrowHandlerArgs } from './types';
+import { defaultArrowOptions, defaultHighlightOptions } from './defaults';
 type Defined<T> = T extends undefined ? never : T;
 type ContextType = {
-  id: Defined<ChessboardOptions['id']>;
-  pieces: Defined<ChessboardOptions['pieces']>;
-  boardOrientation: Defined<ChessboardOptions['boardOrientation']>;
-  chessboardRows: Defined<ChessboardOptions['chessboardRows']>;
-  chessboardColumns: Defined<ChessboardOptions['chessboardColumns']>;
-  boardStyle: Defined<ChessboardOptions['boardStyle']>;
-  squareStyle: Defined<ChessboardOptions['squareStyle']>;
-  squareStyles: Defined<ChessboardOptions['squareStyles']>;
-  darkSquareStyle: Defined<ChessboardOptions['darkSquareStyle']>;
-  lightSquareStyle: Defined<ChessboardOptions['lightSquareStyle']>;
-  dropSquareStyle: Defined<ChessboardOptions['dropSquareStyle']>;
-  draggingPieceStyle: Defined<ChessboardOptions['draggingPieceStyle']>;
-  draggingPieceGhostStyle: Defined<
-    ChessboardOptions['draggingPieceGhostStyle']
-  >;
-  darkSquareNotationStyle: Defined<
-    ChessboardOptions['darkSquareNotationStyle']
-  >;
-  lightSquareNotationStyle: Defined<
-    ChessboardOptions['lightSquareNotationStyle']
-  >;
-  alphaNotationStyle: Defined<ChessboardOptions['alphaNotationStyle']>;
-  numericNotationStyle: Defined<ChessboardOptions['numericNotationStyle']>;
-  showNotation: Defined<ChessboardOptions['showNotation']>;
-  animationDurationInMs: Defined<ChessboardOptions['animationDurationInMs']>;
-  showAnimations: Defined<ChessboardOptions['showAnimations']>;
-  allowDragging: Defined<ChessboardOptions['allowDragging']>;
-  allowDragOffBoard: Defined<ChessboardOptions['allowDragOffBoard']>;
-  allowDrawingArrows: Defined<ChessboardOptions['allowDrawingArrows']>;
-  arrows: Defined<ChessboardOptions['arrows']>;
-  arrowOptions: Defined<ChessboardOptions['arrowOptions']>;
-  canDragPiece: ChessboardOptions['canDragPiece'];
-  onMouseOutSquare: ChessboardOptions['onMouseOutSquare'];
-  onMouseOverSquare: ChessboardOptions['onMouseOverSquare'];
-  onPieceClick: ChessboardOptions['onPieceClick'];
-  onSquareClick: ChessboardOptions['onSquareClick'];
-  onSquareRightClick: ChessboardOptions['onSquareRightClick'];
-  squareRenderer: ChessboardOptions['squareRenderer'];
-  board: SquareDataType[][];
-  isWrapped: boolean;
-  draggingPiece: DraggingPieceDataType | null;
-  currentPosition: PositionDataType;
-  positionDifferences: ReturnType<typeof getPositionUpdates>;
-  newArrowStartSquare: string | null;
-  newArrowOverSquare: {
-    square: string;
-    color: string;
-  } | null;
-  setNewArrowStartSquare: (square: string) => void;
-  setNewArrowOverSquare: (
-    square: string,
-    modifiers?: {
-      shiftKey: boolean;
-      ctrlKey: boolean;
-    },
-  ) => void;
-  internalArrows: Arrow[];
-  conceivedArrows: Arrow[];
-  drawArrow: (
-    newArrowEndSquare: string,
-    modifiers?: {
-      shiftKey: boolean;
-      ctrlKey: boolean;
-    },
-  ) => void;
-  clearArrows: () => void;
+    id: Defined<ChessboardOptions['id']>;
+    pieces: Defined<ChessboardOptions['pieces']>;
+    boardOrientation: Defined<ChessboardOptions['boardOrientation']>;
+    boardStyle: Defined<ChessboardOptions['boardStyle']>;
+    squareStyle: Defined<ChessboardOptions['squareStyle']>;
+    squareStyles: Defined<ChessboardOptions['squareStyles']>;
+    darkSquareStyle: Defined<ChessboardOptions['darkSquareStyle']>;
+    lightSquareStyle: Defined<ChessboardOptions['lightSquareStyle']>;
+    dropSquareStyle: Defined<ChessboardOptions['dropSquareStyle']>;
+    draggingPieceStyle: Defined<ChessboardOptions['draggingPieceStyle']>;
+    draggingPieceGhostStyle: Defined<ChessboardOptions['draggingPieceGhostStyle']>;
+    darkSquareNotationStyle: Defined<ChessboardOptions['darkSquareNotationStyle']>;
+    lightSquareNotationStyle: Defined<ChessboardOptions['lightSquareNotationStyle']>;
+    alphaNotationStyle: Defined<ChessboardOptions['alphaNotationStyle']>;
+    numericNotationStyle: Defined<ChessboardOptions['numericNotationStyle']>;
+    showNotation: Defined<ChessboardOptions['showNotation']>;
+    animationDurationInMs: Defined<ChessboardOptions['animationDurationInMs']>;
+    showAnimations: Defined<ChessboardOptions['showAnimations']>;
+    allowDragging: Defined<ChessboardOptions['allowDragging']>;
+    allowDrawingArrows: Defined<ChessboardOptions['allowDrawingArrows']>;
+    arrows: Defined<ChessboardOptions['arrows']>;
+    arrowOptions: Defined<ChessboardOptions['arrowOptions']>;
+    allowHighlights: Defined<ChessboardOptions['allowHighlights']>;
+    highlights: Defined<ChessboardOptions['highlights']>;
+    highlightOptions: Defined<ChessboardOptions['highlightOptions']>;
+    canDragPiece: ChessboardOptions['canDragPiece'];
+    onMouseOverSquare: ChessboardOptions['onMouseOverSquare'];
+    onPieceClick: ChessboardOptions['onPieceClick'];
+    onSquareClick: ChessboardOptions['onSquareClick'];
+    onSquareRightClick: ChessboardOptions['onSquareRightClick'];
+    squareRenderer: ChessboardOptions['squareRenderer'];
+    board: SquareDataType[][];
+    isWrapped: boolean;
+    draggingPiece: DraggingPieceDataType | null;
+    currentPosition: PositionDataType;
+    positionDifferences: ReturnType<typeof getPositionUpdates>;
+    newArrowStartSquare: string | null;
+    newArrowOverSquare: {
+        square: string;
+        color: string;
+    } | null;
+    setNewArrowStartSquare: (square: string) => void;
+    setNewArrowOverSquare: (square: string, modifiers?: {
+        shiftKey: boolean;
+        ctrlKey: boolean;
+    }) => void;
+    internalArrows: Arrow[];
+    externalArrows: Arrow[];
+    drawArrow: (newArrowEndSquare: string, modifiers?: {
+        shiftKey: boolean;
+        ctrlKey: boolean;
+    }) => void;
+    clearArrows: () => void;
 };
 export declare const useChessboardContext: () => ContextType;
 export type ChessboardOptions = {
-  id?: string;
-  pieces?: PieceRenderObject;
-  position?: string | PositionDataType;
-  boardOrientation?: 'white' | 'black';
-  chessboardRows?: number;
-  chessboardColumns?: number;
-  boardStyle?: React.CSSProperties;
-  squareStyle?: React.CSSProperties;
-  squareStyles?: Record<string, React.CSSProperties>;
-  darkSquareStyle?: React.CSSProperties;
-  lightSquareStyle?: React.CSSProperties;
-  dropSquareStyle?: React.CSSProperties;
-  draggingPieceStyle?: React.CSSProperties;
-  draggingPieceGhostStyle?: React.CSSProperties;
-  darkSquareNotationStyle?: React.CSSProperties;
-  lightSquareNotationStyle?: React.CSSProperties;
-  alphaNotationStyle?: React.CSSProperties;
-  numericNotationStyle?: React.CSSProperties;
-  showNotation?: boolean;
-  animationDurationInMs?: number;
-  showAnimations?: boolean;
-  allowDragging?: boolean;
-  allowDragOffBoard?: boolean;
-  dragActivationDistance?: number;
-  allowDrawingArrows?: boolean;
-  arrows?: Arrow[];
-  arrowOptions?: typeof defaultArrowOptions;
-  clearArrowsOnClick?: boolean;
-  canDragPiece?: ({ isSparePiece, piece, square }: PieceHandlerArgs) => boolean;
-  onArrowsChange?: (arrows: Arrow[]) => void;
-  onMouseOutSquare?: ({ piece, square }: SquareHandlerArgs) => void;
-  onMouseOverSquare?: ({ piece, square }: SquareHandlerArgs) => void;
-  onPieceClick?: ({ isSparePiece, piece, square }: PieceHandlerArgs) => void;
-  onPieceDrag?: ({ isSparePiece, piece, square }: PieceHandlerArgs) => void;
-  onPieceDrop?: ({
-    piece,
-    sourceSquare,
-    targetSquare,
-  }: PieceDropHandlerArgs) => boolean;
-  onSquareClick?: ({ piece, square }: SquareHandlerArgs) => void;
-  onSquareRightClick?: ({ piece, square }: SquareHandlerArgs) => void;
-  squareRenderer?: ({
-    piece,
-    square,
-    children,
-  }: SquareHandlerArgs & {
-    children?: React.ReactNode;
-  }) => React.JSX.Element;
+    id?: string;
+    pieces?: PieceRenderObject;
+    position?: string | PositionDataType;
+    boardOrientation?: 'white' | 'black';
+    boardStyle?: React.CSSProperties;
+    squareStyle?: React.CSSProperties;
+    squareStyles?: Record<string, React.CSSProperties>;
+    darkSquareStyle?: React.CSSProperties;
+    lightSquareStyle?: React.CSSProperties;
+    dropSquareStyle?: React.CSSProperties;
+    draggingPieceStyle?: React.CSSProperties;
+    draggingPieceGhostStyle?: React.CSSProperties;
+    darkSquareNotationStyle?: React.CSSProperties;
+    lightSquareNotationStyle?: React.CSSProperties;
+    alphaNotationStyle?: React.CSSProperties;
+    numericNotationStyle?: React.CSSProperties;
+    showNotation?: string;
+    animationDurationInMs?: number;
+    showAnimations?: boolean;
+    allowDragging?: boolean;
+    dragActivationDistance?: number;
+    allowDrawingArrows?: boolean;
+    arrows?: Arrow[];
+    arrowOptions?: typeof defaultArrowOptions;
+    clearArrowsOnClick?: boolean;
+    allowHighlights?: boolean;
+    highlights?: Highlight[];
+    highlightOptions?: typeof defaultHighlightOptions;
+    canDragPiece?: ({ isSparePiece, piece, square }: PieceHandlerArgs) => boolean;
+    onArrowsChange?: (arrows: Arrow[]) => void;
+    onMouseOverSquare?: ({ piece, square }: SquareHandlerArgs) => void;
+    onPieceClick?: ({ isSparePiece, piece, square }: PieceHandlerArgs) => void;
+    onPieceDrag?: ({ isSparePiece, piece, square }: PieceHandlerArgs) => void;
+    onPieceDrop?: ({ piece, sourceSquare, targetSquare, }: PieceDropHandlerArgs) => boolean;
+    onSquareClick?: ({ piece, square }: SquareHandlerArgs) => void;
+    onSquareRightClick?: ({ piece, square, isDrawingArrow, }: SquareArrowHandlerArgs) => void;
+    squareRenderer?: ({ piece, square, children, }: SquareHandlerArgs & {
+        children?: React.ReactNode;
+    }) => React.JSX.Element;
 };
-export declare function ChessboardProvider({
-  children,
-  options,
-}: React.PropsWithChildren<{
-  options?: ChessboardOptions;
-}>): import('react/jsx-runtime').JSX.Element;
+export declare function ChessboardProvider({ children, options, }: React.PropsWithChildren<{
+    options?: ChessboardOptions;
+}>): import("react/jsx-runtime").JSX.Element;
 export {};

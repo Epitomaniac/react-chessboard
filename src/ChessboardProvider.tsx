@@ -157,7 +157,7 @@ export type ChessboardOptions = {
   lightSquareNotationStyle?: React.CSSProperties;
   alphaNotationStyle?: React.CSSProperties;
   numericNotationStyle?: React.CSSProperties;
-  showNotation?: boolean;
+  showNotation?: string;
 
   // animation
   animationDurationInMs?: number;
@@ -232,7 +232,7 @@ export function ChessboardProvider({
     lightSquareNotationStyle = defaultLightSquareNotationStyle,
     alphaNotationStyle = defaultAlphaNotationStyle,
     numericNotationStyle = defaultNumericNotationStyle,
-    showNotation = true,
+    showNotation = 'inside',
 
     // animation
     animationDurationInMs = 300,

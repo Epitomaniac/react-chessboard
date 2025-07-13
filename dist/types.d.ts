@@ -3,6 +3,10 @@ export type Arrow = {
     endSquare: string;
     color: 'primary' | 'secondary' | 'tertiary' | 'engine';
 };
+export type Highlight = {
+    square: string;
+    color: 'primary' | 'secondary' | 'tertiary' | 'engine';
+};
 export type SquareDataType = {
     squareId: string;
     isLightSquare: boolean;
@@ -21,6 +25,11 @@ export type PositionDataType = {
 export type SquareHandlerArgs = {
     piece: PieceDataType | null;
     square: string;
+};
+export type SquareArrowHandlerArgs = {
+    piece: PieceDataType | null;
+    square: string;
+    isDrawingArrow: boolean;
 };
 export type PieceHandlerArgs = {
     isSparePiece: boolean;

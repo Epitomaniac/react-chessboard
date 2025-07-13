@@ -1,4 +1,4 @@
-export declare function defaultBoardStyle(chessboardColumns: number): React.CSSProperties;
+export declare function defaultBoardStyle(): React.CSSProperties;
 export declare const defaultSquareStyle: React.CSSProperties;
 export declare const defaultDarkSquareStyle: React.CSSProperties;
 export declare const defaultLightSquareStyle: React.CSSProperties;
@@ -20,4 +20,9 @@ export declare const defaultArrowOptions: {
     activeArrowWidthMultiplier: number;
     opacity: number;
     activeOpacity: number;
+};
+export declare const defaultHighlightOptions: {
+    primaryColor: string;
+    secondaryColor: string;
+    tertiaryColor: string;
 };
