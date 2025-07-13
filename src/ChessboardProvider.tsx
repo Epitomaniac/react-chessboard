@@ -20,7 +20,6 @@ import {
   useRef,
   useState,
 } from 'react';
-
 import {
   fenStringToPositionObject,
   generateBoard,
@@ -406,9 +405,29 @@ export function ChessboardProvider({
     [chessboardRows, chessboardColumns, boardOrientation],
   );
 
+  function areArrowsEqual(arr1: Arrow[] = [], arr2: Arrow[] = []): boolean {
+    if (arr1.length !== arr2.length) return false;
+
+    for (let i = 0; i < arr1.length; i++) {
+      const a = arr1[i];
+      const b = arr2[i];
+      if (
+        a.startSquare !== b.startSquare ||
+        a.endSquare !== b.endSquare ||
+        a.color !== b.color
+      ) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   // acts as an event listener for the chessboard's arrows prop
   useEffect(() => {
-    setExternalArrows(arrows);
+    if (!areArrowsEqual(externalArrows, arrows)) {
+      setExternalArrows(arrows ?? []);
+    }
   }, [arrows]);
 
   // if the arrows change, call the onArrowsChange callback
