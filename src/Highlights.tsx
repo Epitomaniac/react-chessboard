@@ -1,4 +1,3 @@
-import React from 'react';
 import { useChessboardContext } from './ChessboardProvider';
 import { getRelativeCoords } from './utils';
 
@@ -19,14 +18,11 @@ export function Highlights({ boardWidth, boardHeight }: Props) {
 
   if (!boardWidth || !boardHeight) return null;
 
-  // Each square is assumed to be a perfect square of this size
   const squareSize = boardWidth / chessboardColumns;
-  const strokeWidth = Math.max(2, Math.round(squareSize / 18));
+  const strokeWidth = Math.max(1, squareSize / 24);
+  const padding = squareSize * 0.01;
+  const radius = squareSize / 2 - strokeWidth / 2 - padding;
 
-  // Reduce radius by half the stroke width so the outer edge touches the square boundary
-  const radius = squareSize / 2 - strokeWidth / 2;
-
-  // Map the logical colour names to actual CSS colours
   const resolveColor = (c?: string) => {
     switch (c) {
       case 'primary':
@@ -49,29 +45,30 @@ export function Highlights({ boardWidth, boardHeight }: Props) {
         top: 0,
         left: 0,
         pointerEvents: 'none',
-        zIndex: 20, // above pieces
+        zIndex: 20,
+        shapeRendering: 'geometricPrecision', // smoother edges
       }}
     >
-      {highlights.map((highlight) => {
+      {highlights.map((h) => {
         const { x, y } = getRelativeCoords(
           boardOrientation,
           boardWidth,
           chessboardColumns,
           chessboardRows,
-          highlight.square,
+          h.square,
         );
-
-        const stroke = resolveColor(highlight.color);
 
         return (
           <circle
-            key={`${id}-highlight-${highlight.square}`}
+            key={`${id}-highlight-${h.square}`}
             cx={x}
             cy={y}
             r={radius}
             fill="none"
-            stroke={stroke}
+            stroke={resolveColor(h.color)}
             strokeWidth={strokeWidth}
+            strokeOpacity={0.9}
+            vectorEffect="non-scaling-stroke" // keeps stroke width crisp if scaled
           />
         );
       })}

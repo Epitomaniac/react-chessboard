@@ -35,6 +35,7 @@ import {
   PieceRenderObject,
   PositionDataType,
   SquareHandlerArgs,
+  SquareArrowHandlerArgs,
 } from './types';
 import { defaultPieces } from './pieces';
 import {
@@ -197,7 +198,11 @@ export type ChessboardOptions = {
     targetSquare,
   }: PieceDropHandlerArgs) => boolean;
   onSquareClick?: ({ piece, square }: SquareHandlerArgs) => void;
-  onSquareRightClick?: ({ piece, square }: SquareHandlerArgs) => void;
+  onSquareRightClick?: ({
+    piece,
+    square,
+    isDrawingArrow,
+  }: SquareArrowHandlerArgs) => void;
   squareRenderer?: ({
     piece,
     square,

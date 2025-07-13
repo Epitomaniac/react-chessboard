@@ -33,6 +33,12 @@ export type SquareHandlerArgs = {
   square: string;
 };
 
+export type SquareArrowHandlerArgs = {
+  piece: PieceDataType | null;
+  square: string;
+  isDrawingArrow: boolean;
+};
+
 export type PieceHandlerArgs = {
   isSparePiece: boolean;
   piece: PieceDataType;

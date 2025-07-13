@@ -50,6 +50,7 @@ export const Square = memo(function Square({
     onSquareRightClick,
     squareRenderer,
     newArrowStartSquare,
+    newArrowOverSquare,
     clearArrows,
     setNewArrowStartSquare,
     setNewArrowOverSquare,
@@ -83,10 +84,6 @@ export const Square = memo(function Square({
       }}
       onContextMenu={(e) => {
         e.preventDefault();
-        onSquareRightClick?.({
-          piece: currentPosition[squareId] ?? null,
-          square: squareId,
-        });
       }}
       onMouseDown={(e) => {
         if (e.button === 2 && allowDrawingArrows) {
@@ -98,6 +95,13 @@ export const Square = memo(function Square({
           clearArrows();
         }
         if (e.button === 2) {
+          e.preventDefault();
+          onSquareRightClick?.({
+            piece: currentPosition[squareId] ?? null,
+            square: squareId,
+            isDrawingArrow: allowDrawingArrows && !!newArrowOverSquare,
+          });
+
           if (newArrowStartSquare) {
             drawArrow(squareId, {
               shiftKey: e.shiftKey,
