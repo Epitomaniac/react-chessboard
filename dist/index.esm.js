@@ -5966,7 +5966,7 @@ function ChessboardProvider({ children, options }) {
   const [newArrowStartSquare, setNewArrowStartSquare] = useState(null);
   const [newArrowOverSquare, setNewArrowOverSquare] = useState(null);
   const [internalArrows, setInternalArrows] = useState([]);
-  const [conceivedArrows, setConceivedArrows] = useState([]);
+  const [conceivedArrows, setExternalArrows] = useState([]);
   // position we are animating to, if a new position comes in before the animation completes, we will use this to set the new position
   const [waitingForAnimationPosition, setWaitingForAnimationPosition] =
     useState(null);
@@ -6061,21 +6061,21 @@ function ChessboardProvider({ children, options }) {
   );
   // acts as an event listener for the chessboard's arrows prop
   useEffect(() => {
-    setConceivedArrows(arrows);
+    setExternalArrows(arrows);
   }, [arrows]);
   // if the arrows change, call the onArrowsChange callback
   useEffect(() => {
-    const filteredConceivedArrows = conceivedArrows.filter(
+    const filteredExternalArrows = conceivedArrows.filter(
       (arrow) => arrow.color !== 'engine',
     );
-    onArrowsChange?.([...filteredConceivedArrows, ...internalArrows]);
+    onArrowsChange?.([...filteredExternalArrows, ...internalArrows]);
   }, [conceivedArrows, internalArrows]);
   function clearArrows() {
-    const filteredConceivedArrows = conceivedArrows.filter(
+    const filteredExternalArrows = conceivedArrows.filter(
       (arrow) => arrow.color === 'engine',
     );
     setInternalArrows([]);
-    setConceivedArrows(filteredConceivedArrows);
+    setExternalArrows(filteredExternalArrows);
     setNewArrowStartSquare(null);
     setNewArrowOverSquare(null);
   }
@@ -6115,7 +6115,7 @@ function ChessboardProvider({ children, options }) {
               ),
           ),
         );
-        setConceivedArrows((prev) =>
+        setExternalArrows((prev) =>
           prev.filter(
             (arrow) =>
               !(
@@ -6140,7 +6140,7 @@ function ChessboardProvider({ children, options }) {
               ),
           ),
         );
-        setConceivedArrows((prev) =>
+        setExternalArrows((prev) =>
           prev.filter(
             (arrow) =>
               !(

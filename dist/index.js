@@ -5957,7 +5957,7 @@ function ChessboardProvider({ children, options }) {
   const [newArrowStartSquare, setNewArrowStartSquare] = React.useState(null);
   const [newArrowOverSquare, setNewArrowOverSquare] = React.useState(null);
   const [internalArrows, setInternalArrows] = React.useState([]);
-  const [conceivedArrows, setConceivedArrows] = React.useState([]);
+  const [conceivedArrows, setExternalArrows] = React.useState([]);
   // position we are animating to, if a new position comes in before the animation completes, we will use this to set the new position
   const [waitingForAnimationPosition, setWaitingForAnimationPosition] =
     React.useState(null);
@@ -6052,21 +6052,21 @@ function ChessboardProvider({ children, options }) {
   );
   // acts as an event listener for the chessboard's arrows prop
   React.useEffect(() => {
-    setConceivedArrows(arrows);
+    setExternalArrows(arrows);
   }, [arrows]);
   // if the arrows change, call the onArrowsChange callback
   React.useEffect(() => {
-    const filteredConceivedArrows = conceivedArrows.filter(
+    const filteredExternalArrows = conceivedArrows.filter(
       (arrow) => arrow.color !== 'engine',
     );
-    onArrowsChange?.([...filteredConceivedArrows, ...internalArrows]);
+    onArrowsChange?.([...filteredExternalArrows, ...internalArrows]);
   }, [conceivedArrows, internalArrows]);
   function clearArrows() {
-    const filteredConceivedArrows = conceivedArrows.filter(
+    const filteredExternalArrows = conceivedArrows.filter(
       (arrow) => arrow.color === 'engine',
     );
     setInternalArrows([]);
-    setConceivedArrows(filteredConceivedArrows);
+    setExternalArrows(filteredExternalArrows);
     setNewArrowStartSquare(null);
     setNewArrowOverSquare(null);
   }
@@ -6106,7 +6106,7 @@ function ChessboardProvider({ children, options }) {
               ),
           ),
         );
-        setConceivedArrows((prev) =>
+        setExternalArrows((prev) =>
           prev.filter(
             (arrow) =>
               !(
@@ -6131,7 +6131,7 @@ function ChessboardProvider({ children, options }) {
               ),
           ),
         );
-        setConceivedArrows((prev) =>
+        setExternalArrows((prev) =>
           prev.filter(
             (arrow) =>
               !(

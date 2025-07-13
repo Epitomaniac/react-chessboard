@@ -3,6 +3,7 @@ import { snapCenterToCursor } from '@dnd-kit/modifiers';
 import { useEffect, useRef, useState } from 'react';
 
 import { Arrows } from './Arrows';
+import { Highlights } from './Highlights';
 import { Draggable } from './Draggable';
 import { Droppable } from './Droppable';
 import { Piece } from './Piece';
@@ -74,6 +75,7 @@ export function Board() {
         )}
 
         <Arrows boardWidth={boardWidth} boardHeight={boardHeight} />
+        <Highlights boardWidth={boardWidth} boardHeight={boardHeight} />
       </div>
 
       <DragOverlay

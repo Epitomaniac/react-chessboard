@@ -88,7 +88,6 @@ export const AnalysisBoard: Story = {
       arrows: arrow,
       position: chessPosition,
       onPieceDrop,
-      id: 'analysis-board',
     };
 
     // render the chessboard

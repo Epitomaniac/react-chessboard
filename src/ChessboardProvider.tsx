@@ -121,7 +121,8 @@ type ContextType = {
     square: string,
     modifiers?: { shiftKey: boolean; ctrlKey: boolean },
   ) => void;
-  conceivedArrows: Arrow[];
+  internalArrows: Arrow[];
+  externalArrows: Arrow[];
   drawArrow: (
     newArrowEndSquare: string,
     modifiers?: { shiftKey: boolean; ctrlKey: boolean },
@@ -302,7 +303,8 @@ export function ChessboardProvider({
     square: string;
     color: string;
   } | null>(null);
-  const [conceivedArrows, setConceivedArrows] = useState<Arrow[]>([]);
+  const [internalArrows, setInternalArrows] = useState<Arrow[]>([]);
+  const [externalArrows, setExternalArrows] = useState<Arrow[]>([]);
 
   // position we are animating to, if a new position comes in before the animation completes, we will use this to set the new position
   const [waitingForAnimationPosition, setWaitingForAnimationPosition] =
@@ -420,24 +422,25 @@ export function ChessboardProvider({
 
   // acts as an event listener for the chessboard's arrows prop
   useEffect(() => {
-    if (JSON.stringify(conceivedArrows) !== JSON.stringify(arrows)) {
-      setConceivedArrows(arrows);
+    if (JSON.stringify(externalArrows) !== JSON.stringify(arrows)) {
+      setExternalArrows(arrows);
     }
   }, [arrows]);
 
   // if the arrows change, call the onArrowsChange callback
   useEffect(() => {
-    const filteredConceivedArrows = conceivedArrows.filter(
+    const filteredExternalArrows = externalArrows.filter(
       (arrow) => arrow.color !== 'engine',
     );
-    onArrowsChange?.([...filteredConceivedArrows]);
-  }, [conceivedArrows]);
+    onArrowsChange?.([...filteredExternalArrows, ...internalArrows]);
+  }, [externalArrows, internalArrows]);
 
   function clearArrows() {
-    const filteredConceivedArrows = conceivedArrows.filter(
+    const filteredExternalArrows = externalArrows.filter(
       (arrow) => arrow.color === 'engine',
     );
-    setConceivedArrows(filteredConceivedArrows);
+    setInternalArrows([]);
+    setExternalArrows(filteredExternalArrows);
     setNewArrowStartSquare(null);
     setNewArrowOverSquare(null);
   }
@@ -451,20 +454,21 @@ export function ChessboardProvider({
         return;
       }
 
+      const allArrows = [...externalArrows, ...internalArrows];
       const arrowColor = modifiers?.shiftKey
         ? 'secondary'
         : modifiers?.ctrlKey
           ? 'tertiary'
           : 'primary';
 
-      const arrowExists = conceivedArrows.some(
+      const arrowExists = allArrows.some(
         (arrow) =>
           arrow.startSquare === newArrowStartSquare &&
           arrow.endSquare === newArrowEndSquare &&
           arrow.color === arrowColor,
       );
 
-      const arrowExistsWithDifferentColor = conceivedArrows.some(
+      const arrowExistsWithDifferentColor = allArrows.some(
         (arrow) =>
           arrow.startSquare === newArrowStartSquare &&
           arrow.endSquare === newArrowEndSquare &&
@@ -474,7 +478,7 @@ export function ChessboardProvider({
 
       // if the arrow already exists, clear it
       if (arrowExists) {
-        setConceivedArrows((prev) =>
+        setInternalArrows((prev) =>
           prev.filter(
             (arrow) =>
               !(
@@ -484,7 +488,7 @@ export function ChessboardProvider({
               ),
           ),
         );
-        setConceivedArrows((prev) =>
+        setExternalArrows((prev) =>
           prev.filter(
             (arrow) =>
               !(
@@ -501,7 +505,7 @@ export function ChessboardProvider({
 
       // if the arrow exists with a different color, overwrite it
       if (arrowExistsWithDifferentColor) {
-        setConceivedArrows((prev) =>
+        setInternalArrows((prev) =>
           prev.filter(
             (arrow) =>
               !(
@@ -510,7 +514,7 @@ export function ChessboardProvider({
               ),
           ),
         );
-        setConceivedArrows((prev) =>
+        setExternalArrows((prev) =>
           prev.filter(
             (arrow) =>
               !(
@@ -523,7 +527,7 @@ export function ChessboardProvider({
 
       // new arrow with different start and end square, add to internal arrows
       if (newArrowStartSquare && newArrowStartSquare !== newArrowEndSquare) {
-        setConceivedArrows((prevArrows) => [
+        setInternalArrows((prevArrows) => [
           ...prevArrows,
           {
             startSquare: newArrowStartSquare,
@@ -538,7 +542,8 @@ export function ChessboardProvider({
     },
     [
       allowDrawingArrows,
-      conceivedArrows,
+      externalArrows,
+      internalArrows,
       arrowOptions.primaryColor,
       arrowOptions.secondaryColor,
       arrowOptions.tertiaryColor,
@@ -721,7 +726,8 @@ export function ChessboardProvider({
         newArrowOverSquare,
         setNewArrowStartSquare,
         setNewArrowOverSquare: setNewArrowOverSquareWithModifiers,
-        conceivedArrows,
+        internalArrows,
+        externalArrows,
         drawArrow,
         clearArrows,
       }}

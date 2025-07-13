@@ -1,5 +1,4 @@
-import { Fragment } from 'react';
-
+import React from 'react';
 import { useChessboardContext } from './ChessboardProvider';
 import { getRelativeCoords } from './utils';
 
@@ -8,67 +7,39 @@ type Props = {
   boardHeight: number | undefined;
 };
 
-export function Arrows({ boardWidth, boardHeight }: Props) {
+export function Highlights({ boardWidth, boardHeight }: Props) {
   const {
     id,
-    conceivedArrows,
-    arrowOptions,
+    highlights,
+    highlightOptions,
     boardOrientation,
     chessboardColumns,
     chessboardRows,
-    newArrowStartSquare,
-    newArrowOverSquare,
   } = useChessboardContext();
 
-  if (!boardWidth) return null;
+  if (!boardWidth || !boardHeight) return null;
 
-  // ---------------------------------------------------------------------------
-  // 1 · Work out whether the user is currently dragging/drawing an arrow
-  // ---------------------------------------------------------------------------
-  const currentlyDrawingArrow =
-    newArrowStartSquare &&
-    newArrowOverSquare &&
-    newArrowStartSquare !== newArrowOverSquare.square
-      ? {
-          startSquare: newArrowStartSquare,
-          endSquare: newArrowOverSquare.square,
-          color: newArrowOverSquare.color,
-        }
-      : null;
+  // Each square is assumed to be a perfect square of this size
+  const squareSize = boardWidth / chessboardColumns;
+  const strokeWidth = Math.max(2, Math.round(squareSize / 18));
 
-  // ---------------------------------------------------------------------------
-  // 2 · Merge and deduplicate, giving precedence to arrows with color “engine”
-  // ---------------------------------------------------------------------------
-  const byKey = new Map<string, (typeof conceivedArrows)[number]>();
+  // Reduce radius by half the stroke width so the outer edge touches the square boundary
+  const radius = squareSize / 2 - strokeWidth / 2;
 
-  for (const arrow of conceivedArrows) {
-    const key = `${arrow.startSquare}-${arrow.endSquare}`;
-    const existing = byKey.get(key);
-
-    if (arrow.color === 'engine' || !existing || existing.color !== 'engine') {
-      byKey.set(key, arrow); // engine overwrites, others set if empty
+  // Map the logical colour names to actual CSS colours
+  const resolveColor = (c?: string) => {
+    switch (c) {
+      case 'primary':
+        return highlightOptions.primaryColor;
+      case 'secondary':
+        return highlightOptions.secondaryColor;
+      case 'tertiary':
+        return highlightOptions.tertiaryColor;
+      default:
+        return c ?? highlightOptions.primaryColor;
     }
-  }
+  };
 
-  if (currentlyDrawingArrow) {
-    byKey.set(
-      `${currentlyDrawingArrow.startSquare}-${currentlyDrawingArrow.endSquare}`,
-      {
-        ...currentlyDrawingArrow,
-        color: currentlyDrawingArrow.color as
-          | 'primary'
-          | 'secondary'
-          | 'tertiary'
-          | 'engine',
-      },
-    );
-  }
-
-  const arrowsToDraw = Array.from(byKey.values());
-
-  // ---------------------------------------------------------------------------
-  // 3 · Render
-  // ---------------------------------------------------------------------------
   return (
     <svg
       width={boardWidth}
@@ -81,107 +52,27 @@ export function Arrows({ boardWidth, boardHeight }: Props) {
         zIndex: 20, // above pieces
       }}
     >
-      {arrowsToDraw.map((arrow, i) => {
-        const from = getRelativeCoords(
+      {highlights.map((highlight) => {
+        const { x, y } = getRelativeCoords(
           boardOrientation,
           boardWidth,
           chessboardColumns,
           chessboardRows,
-          arrow.startSquare,
-        );
-        const to = getRelativeCoords(
-          boardOrientation,
-          boardWidth,
-          chessboardColumns,
-          chessboardRows,
-          arrow.endSquare,
+          highlight.square,
         );
 
-        // --- shorten arrow so its tip is roughly centred in the target square
-        const squareWidth = boardWidth / chessboardColumns;
-        let ARROW_LENGTH_REDUCER =
-          squareWidth / arrowOptions.arrowLengthReducerDenominator;
-
-        const isArrowActive =
-          currentlyDrawingArrow &&
-          arrow.startSquare === currentlyDrawingArrow.startSquare &&
-          arrow.endSquare === currentlyDrawingArrow.endSquare;
-
-        // if multiple arrows end on the same square (but are not the active one),
-        // shorten them a bit more so they don’t overlap as badly
-        if (
-          arrowsToDraw.some(
-            (rest) => rest !== arrow && rest.endSquare === arrow.endSquare,
-          ) &&
-          !isArrowActive
-        ) {
-          ARROW_LENGTH_REDUCER =
-            squareWidth / arrowOptions.sameTargetArrowLengthReducerDenominator;
-        }
-
-        // work out the shortened end‑point
-        const dx = to.x - from.x;
-        const dy = to.y - from.y;
-        const r = Math.hypot(dx, dy);
-        const end = {
-          x: from.x + (dx * (r - ARROW_LENGTH_REDUCER)) / r,
-          y: from.y + (dy * (r - ARROW_LENGTH_REDUCER)) / r,
-        };
-
-        // map the “logical” colour names to actual CSS colours
-        const resolveColor = (c: string | undefined) => {
-          switch (c) {
-            case 'primary':
-              return arrowOptions.primaryColor;
-            case 'secondary':
-              return arrowOptions.secondaryColor;
-            case 'tertiary':
-              return arrowOptions.tertiaryColor;
-            case 'engine':
-              return arrowOptions.engineColor;
-            default:
-              return c ?? arrowOptions.primaryColor;
-          }
-        };
-        const stroke = resolveColor(arrow.color);
+        const stroke = resolveColor(highlight.color);
 
         return (
-          <Fragment
-            key={`${id}-arrow-${arrow.startSquare}-${arrow.endSquare}${
-              isArrowActive ? '-active' : ''
-            }`}
-          >
-            <marker
-              id={`${id}-arrowhead-${i}-${arrow.startSquare}-${arrow.endSquare}`}
-              markerWidth="2"
-              markerHeight="2.5"
-              refX="1.25"
-              refY="1.25"
-              orient="auto"
-            >
-              <polygon points="0.3 0, 2 1.25, 0.3 2.5" fill={stroke} />
-            </marker>
-
-            <line
-              x1={from.x}
-              y1={from.y}
-              x2={end.x}
-              y2={end.y}
-              opacity={
-                isArrowActive
-                  ? arrowOptions.activeOpacity
-                  : arrowOptions.opacity
-              }
-              stroke={stroke}
-              strokeWidth={
-                isArrowActive
-                  ? arrowOptions.activeArrowWidthMultiplier *
-                    (squareWidth / arrowOptions.arrowWidthDenominator)
-                  : squareWidth / arrowOptions.arrowWidthDenominator
-              }
-              markerEnd={`url(#${id}-arrowhead-${i}-${arrow.startSquare}-${arrow.endSquare})`}
-            />
-          </Fragment>
+          <circle
+            key={`${id}-highlight-${highlight.square}`}
+            cx={x}
+            cy={y}
+            r={radius}
+            fill="none"
+            stroke={stroke}
+            strokeWidth={strokeWidth}
+          />
         );
       })}
     </svg>

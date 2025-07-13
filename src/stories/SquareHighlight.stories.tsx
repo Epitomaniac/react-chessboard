@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { Chessboard } from '../../src';
+import { useState } from 'react';
+import type { Highlight, SquareHandlerArgs } from '../../src/types';
 
 const meta: Meta<typeof Chessboard> = {
   title: 'stories/SquareHighlight',
@@ -11,9 +13,17 @@ type Story = StoryObj<typeof meta>;
 
 export const SquareHighlight: Story = {
   render: () => {
-    const chessboardOptions = {
-      id: 'analysis-board',
+    const [highlights, setHighlights] = useState<Highlight[]>([]);
+
+    const handleSquareRightClick = ({ square }: SquareHandlerArgs) => {
+      setHighlights([...highlights, { square, color: 'primary' }]);
     };
+
+    const chessboardOptions = {
+      highlights,
+      onSquareRightClick: handleSquareRightClick,
+    };
+
     return (
       <div
         style={{

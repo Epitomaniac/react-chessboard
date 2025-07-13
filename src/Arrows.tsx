@@ -11,7 +11,8 @@ type Props = {
 export function Arrows({ boardWidth, boardHeight }: Props) {
   const {
     id,
-    conceivedArrows,
+    externalArrows,
+    internalArrows,
     arrowOptions,
     boardOrientation,
     chessboardColumns,
@@ -39,9 +40,10 @@ export function Arrows({ boardWidth, boardHeight }: Props) {
   // ---------------------------------------------------------------------------
   // 2 · Merge and deduplicate, giving precedence to arrows with color “engine”
   // ---------------------------------------------------------------------------
-  const byKey = new Map<string, (typeof conceivedArrows)[number]>();
+  const combined = [...externalArrows, ...internalArrows];
+  const byKey = new Map<string, (typeof combined)[number]>();
 
-  for (const arrow of conceivedArrows) {
+  for (const arrow of combined) {
     const key = `${arrow.startSquare}-${arrow.endSquare}`;
     const existing = byKey.get(key);
 
