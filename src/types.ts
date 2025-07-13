@@ -4,6 +4,11 @@ export type Arrow = {
   color: 'primary' | 'secondary' | 'tertiary' | 'engine'; // the colors would then be mapped based on the values inside arrowOptions object
 };
 
+export type Highlight = {
+  square: string;
+  color: 'primary' | 'secondary' | 'tertiary' | 'engine';
+};
+
 export type SquareDataType = {
   squareId: string; // e.g. "a8"
   isLightSquare: boolean;
