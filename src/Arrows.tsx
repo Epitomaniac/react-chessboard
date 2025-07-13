@@ -15,8 +15,6 @@ export function Arrows({ boardWidth, boardHeight }: Props) {
     internalArrows,
     arrowOptions,
     boardOrientation,
-    chessboardColumns,
-    chessboardRows,
     newArrowStartSquare,
     newArrowOverSquare,
   } = useChessboardContext();
@@ -87,20 +85,16 @@ export function Arrows({ boardWidth, boardHeight }: Props) {
         const from = getRelativeCoords(
           boardOrientation,
           boardWidth,
-          chessboardColumns,
-          chessboardRows,
           arrow.startSquare,
         );
         const to = getRelativeCoords(
           boardOrientation,
           boardWidth,
-          chessboardColumns,
-          chessboardRows,
           arrow.endSquare,
         );
 
         // --- shorten arrow so its tip is roughly centred in the target square
-        const squareWidth = boardWidth / chessboardColumns;
+        const squareWidth = boardWidth / 8;
         let ARROW_LENGTH_REDUCER =
           squareWidth / arrowOptions.arrowLengthReducerDenominator;
 

@@ -10,18 +10,10 @@ import { Piece } from './Piece';
 import { Square } from './Square';
 import { useChessboardContext } from './ChessboardProvider';
 import { defaultBoardStyle } from './defaults';
-import { preventDragOffBoard } from './modifiers';
 
 export function Board() {
-  const {
-    allowDragOffBoard,
-    board,
-    boardStyle,
-    chessboardColumns,
-    currentPosition,
-    draggingPiece,
-    id,
-  } = useChessboardContext();
+  const { board, boardStyle, currentPosition, draggingPiece, id } =
+    useChessboardContext();
   const boardRef = useRef<HTMLDivElement>(null);
   const [boardWidth, setBoardWidth] = useState(boardRef.current?.clientWidth);
   const [boardHeight, setBoardHeight] = useState(
@@ -48,7 +40,7 @@ export function Board() {
       <div
         id={`${id}-board`}
         ref={boardRef}
-        style={{ ...defaultBoardStyle(chessboardColumns), ...boardStyle }}
+        style={{ ...defaultBoardStyle(), ...boardStyle }}
       >
         {board.map((row) =>
           row.map((square) => {
@@ -78,15 +70,7 @@ export function Board() {
         <Highlights boardWidth={boardWidth} boardHeight={boardHeight} />
       </div>
 
-      <DragOverlay
-        dropAnimation={null}
-        modifiers={[
-          snapCenterToCursor,
-          ...(allowDragOffBoard
-            ? []
-            : [preventDragOffBoard(id, draggingPiece?.position || '')]),
-        ]}
-      >
+      <DragOverlay dropAnimation={null} modifiers={[snapCenterToCursor]}>
         {draggingPiece ? (
           <Piece
             clone

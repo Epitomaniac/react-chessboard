@@ -1,9 +1,7 @@
-export function defaultBoardStyle(
-  chessboardColumns: number,
-): React.CSSProperties {
+export function defaultBoardStyle(): React.CSSProperties {
   return {
     display: 'grid',
-    gridTemplateColumns: `repeat(${chessboardColumns}, 1fr)`,
+    gridTemplateColumns: `repeat(8, 1fr)`,
     overflow: 'hidden',
     width: '100%',
     height: '100%',

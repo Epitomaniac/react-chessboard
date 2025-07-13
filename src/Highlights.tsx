@@ -7,18 +7,12 @@ type Props = {
 };
 
 export function Highlights({ boardWidth, boardHeight }: Props) {
-  const {
-    id,
-    highlights,
-    highlightOptions,
-    boardOrientation,
-    chessboardColumns,
-    chessboardRows,
-  } = useChessboardContext();
+  const { id, highlights, highlightOptions, boardOrientation } =
+    useChessboardContext();
 
   if (!boardWidth || !boardHeight) return null;
 
-  const squareSize = boardWidth / chessboardColumns;
+  const squareSize = boardWidth / 8;
   const strokeWidth = Math.max(1, squareSize / 24);
   const padding = squareSize * 0.01;
   const radius = squareSize / 2 - strokeWidth / 2 - padding;
@@ -36,6 +30,16 @@ export function Highlights({ boardWidth, boardHeight }: Props) {
     }
   };
 
+  type SquareObject = { square: string; [key: string]: any };
+
+  function deduplicateBySquare<T extends SquareObject>(arr: T[]): T[] {
+    const map = new Map<string, T>();
+    for (const item of arr) {
+      map.set(item.square, item); // Last occurrence wins
+    }
+    return Array.from(map.values());
+  }
+
   return (
     <svg
       width={boardWidth}
@@ -49,12 +53,10 @@ export function Highlights({ boardWidth, boardHeight }: Props) {
         shapeRendering: 'geometricPrecision', // smoother edges
       }}
     >
-      {highlights.map((h) => {
+      {deduplicateBySquare(highlights).map((h) => {
         const { x, y } = getRelativeCoords(
           boardOrientation,
           boardWidth,
-          chessboardColumns,
-          chessboardRows,
           h.square,
         );
 

@@ -31,8 +31,6 @@ export const Square = memo(function Square({
     id,
     allowDrawingArrows,
     boardOrientation,
-    chessboardColumns,
-    chessboardRows,
     currentPosition,
     squareStyle,
     squareStyles,
@@ -44,7 +42,6 @@ export const Square = memo(function Square({
     alphaNotationStyle,
     numericNotationStyle,
     showNotation,
-    onMouseOutSquare,
     onMouseOverSquare,
     onSquareClick,
     onSquareRightClick,
@@ -123,12 +120,6 @@ export const Square = memo(function Square({
           square: squareId,
         });
       }}
-      onMouseLeave={() =>
-        onMouseOutSquare?.({
-          piece: currentPosition[squareId] ?? null,
-          square: squareId,
-        })
-      }
     >
       {showNotation ? (
         <span
@@ -144,10 +135,7 @@ export const Square = memo(function Square({
                 }
           }
         >
-          {row ===
-            (boardOrientation === 'white'
-              ? '1'
-              : chessboardRows.toString()) && (
+          {row === (boardOrientation === 'white' ? '1' : '8') && (
             <span
               style={{ ...defaultAlphaNotationStyle, ...alphaNotationStyle }}
             >
@@ -157,11 +145,7 @@ export const Square = memo(function Square({
           {column ===
             (boardOrientation === 'white'
               ? 'a'
-              : columnIndexToChessColumn(
-                  0,
-                  chessboardColumns,
-                  boardOrientation,
-                )) && (
+              : columnIndexToChessColumn(0, boardOrientation)) && (
             <span
               style={{
                 ...defaultNumericNotationStyle,

@@ -64,8 +64,6 @@ type ContextType = {
   pieces: Defined<ChessboardOptions['pieces']>;
 
   boardOrientation: Defined<ChessboardOptions['boardOrientation']>;
-  chessboardRows: Defined<ChessboardOptions['chessboardRows']>;
-  chessboardColumns: Defined<ChessboardOptions['chessboardColumns']>;
 
   boardStyle: Defined<ChessboardOptions['boardStyle']>;
   squareStyle: Defined<ChessboardOptions['squareStyle']>;
@@ -92,7 +90,6 @@ type ContextType = {
   showAnimations: Defined<ChessboardOptions['showAnimations']>;
 
   allowDragging: Defined<ChessboardOptions['allowDragging']>;
-  allowDragOffBoard: Defined<ChessboardOptions['allowDragOffBoard']>;
 
   allowDrawingArrows: Defined<ChessboardOptions['allowDrawingArrows']>;
   arrows: Defined<ChessboardOptions['arrows']>;
@@ -102,7 +99,6 @@ type ContextType = {
   highlightOptions: Defined<ChessboardOptions['highlightOptions']>;
 
   canDragPiece: ChessboardOptions['canDragPiece'];
-  onMouseOutSquare: ChessboardOptions['onMouseOutSquare'];
   onMouseOverSquare: ChessboardOptions['onMouseOverSquare'];
   onPieceClick: ChessboardOptions['onPieceClick'];
   onSquareClick: ChessboardOptions['onSquareClick'];
@@ -145,8 +141,6 @@ export type ChessboardOptions = {
 
   // board dimensions and orientation
   boardOrientation?: 'white' | 'black';
-  chessboardRows?: number;
-  chessboardColumns?: number;
 
   // board and squares styles
   boardStyle?: React.CSSProperties;
@@ -171,7 +165,6 @@ export type ChessboardOptions = {
 
   // drag and drop
   allowDragging?: boolean;
-  allowDragOffBoard?: boolean;
   dragActivationDistance?: number;
 
   // arrows
@@ -188,7 +181,6 @@ export type ChessboardOptions = {
   // handlers
   canDragPiece?: ({ isSparePiece, piece, square }: PieceHandlerArgs) => boolean;
   onArrowsChange?: (arrows: Arrow[]) => void;
-  onMouseOutSquare?: ({ piece, square }: SquareHandlerArgs) => void;
   onMouseOverSquare?: ({ piece, square }: SquareHandlerArgs) => void;
   onPieceClick?: ({ isSparePiece, piece, square }: PieceHandlerArgs) => void;
   onPieceDrag?: ({ isSparePiece, piece, square }: PieceHandlerArgs) => void;
@@ -224,11 +216,9 @@ export function ChessboardProvider({
 
     // board dimensions and orientation
     boardOrientation = 'white',
-    chessboardRows = 8,
-    chessboardColumns = 8,
 
     // board and squares styles
-    boardStyle = defaultBoardStyle(chessboardColumns),
+    boardStyle = defaultBoardStyle(),
     squareStyle = defaultSquareStyle,
     squareStyles = {},
     darkSquareStyle = defaultDarkSquareStyle,
@@ -250,7 +240,6 @@ export function ChessboardProvider({
 
     // drag and drop
     allowDragging = true,
-    allowDragOffBoard = true,
     dragActivationDistance = 1,
 
     // arrows
@@ -266,7 +255,6 @@ export function ChessboardProvider({
     // handlers
     canDragPiece,
     onArrowsChange,
-    onMouseOutSquare,
     onMouseOverSquare,
     onPieceClick,
     onPieceDrag,
@@ -283,7 +271,7 @@ export function ChessboardProvider({
   // the current position of pieces on the chessboard
   const [currentPosition, setCurrentPosition] = useState(
     typeof position === 'string'
-      ? fenStringToPositionObject(position, chessboardRows, chessboardColumns)
+      ? fenStringToPositionObject(position)
       : position,
   );
 
@@ -323,7 +311,7 @@ export function ChessboardProvider({
     clearArrows();
     const newPosition =
       typeof position === 'string'
-        ? fenStringToPositionObject(position, chessboardRows, chessboardColumns)
+        ? fenStringToPositionObject(position)
         : position;
 
     // if no animation, just set the position
@@ -345,7 +333,6 @@ export function ChessboardProvider({
     const positionUpdates = getPositionUpdates(
       currentWaitingForAnimationPosition ?? currentPosition, // use the saved position if it exists, otherwise use the current position
       newPosition,
-      chessboardColumns,
       boardOrientation,
     );
 
@@ -414,15 +401,15 @@ export function ChessboardProvider({
   useEffect(() => {
     setCurrentPosition(
       typeof position === 'string'
-        ? fenStringToPositionObject(position, chessboardRows, chessboardColumns)
+        ? fenStringToPositionObject(position)
         : position,
     );
-  }, [chessboardRows, chessboardColumns, boardOrientation]);
+  }, [boardOrientation]);
 
   // only redraw the board when the dimensions or board orientation change
   const board = useMemo(
-    () => generateBoard(chessboardRows, chessboardColumns, boardOrientation),
-    [chessboardRows, chessboardColumns, boardOrientation],
+    () => generateBoard(boardOrientation),
+    [boardOrientation],
   );
 
   // acts as an event listener for the chessboard's arrows prop
@@ -681,8 +668,6 @@ export function ChessboardProvider({
         pieces,
 
         boardOrientation,
-        chessboardRows,
-        chessboardColumns,
 
         boardStyle,
         squareStyle,
@@ -703,7 +688,6 @@ export function ChessboardProvider({
         showAnimations,
 
         allowDragging,
-        allowDragOffBoard,
 
         allowDrawingArrows,
         arrows,
@@ -714,7 +698,6 @@ export function ChessboardProvider({
         highlightOptions,
 
         canDragPiece,
-        onMouseOutSquare,
         onMouseOverSquare,
         onPieceClick,
         onSquareClick,

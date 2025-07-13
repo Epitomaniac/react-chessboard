@@ -1,19 +1,12 @@
 import type { SquareDataType, FenPieceString, PositionDataType } from './types';
 
-export function generateBoard(
-  noOfRows: number,
-  noOfColumns: number,
-  boardOrientation: 'white' | 'black',
-) {
-  const board: SquareDataType[][] = Array.from(
-    Array(noOfRows),
-    () => new Array(noOfColumns),
-  );
+export function generateBoard(boardOrientation: 'white' | 'black') {
+  const board: SquareDataType[][] = Array.from(Array(8), () => new Array(8));
 
-  for (let row = 0; row < noOfRows; row++) {
-    for (let column = 0; column < noOfColumns; column++) {
+  for (let row = 0; row < 8; row++) {
+    for (let column = 0; column < 8; column++) {
       board[row][column] = {
-        squareId: `${columnIndexToChessColumn(column, noOfColumns, boardOrientation)}${rowIndexToChessRow(row, noOfRows, boardOrientation)}`, // e.g. "a8" for row 0, column 0 in white orientation
+        squareId: `${columnIndexToChessColumn(column, boardOrientation)}${rowIndexToChessRow(row, boardOrientation)}`, // e.g. "a8" for row 0, column 0 in white orientation
         isLightSquare: (row + column) % 2 === 0,
       };
     }
@@ -24,49 +17,39 @@ export function generateBoard(
 
 export function rowIndexToChessRow(
   row: number,
-  noOfRows: number,
   boardOrientation: 'white' | 'black',
 ) {
   return boardOrientation === 'white'
-    ? (noOfRows - row).toString()
+    ? (8 - row).toString()
     : (row + 1).toString();
 }
 
 export function columnIndexToChessColumn(
   column: number,
-  noOfColumns: number,
   boardOrientation: 'white' | 'black',
 ) {
   return boardOrientation === 'white'
     ? String.fromCharCode(97 + column)
-    : String.fromCharCode(97 + noOfColumns - column - 1);
+    : String.fromCharCode(97 + 8 - column - 1);
 }
 
 export function chessColumnToColumnIndex(
   column: string,
-  noOfColumns: number,
   boardOrientation: 'white' | 'black',
 ) {
   return boardOrientation === 'white'
     ? column.charCodeAt(0) - 97
-    : noOfColumns - (column.charCodeAt(0) - 97) - 1;
+    : 8 - (column.charCodeAt(0) - 97) - 1;
 }
 
 export function chessRowToRowIndex(
   row: string,
-  noOfRows: number,
   boardOrientation: 'white' | 'black',
 ) {
-  return boardOrientation === 'white'
-    ? noOfRows - Number(row)
-    : Number(row) - 1;
+  return boardOrientation === 'white' ? 8 - Number(row) : Number(row) - 1;
 }
 
-export function fenStringToPositionObject(
-  fen: string,
-  noOfRows: number,
-  noOfColumns: number,
-) {
+export function fenStringToPositionObject(fen: string) {
   const positionObject: PositionDataType = {};
 
   const rows = fen.split(' ')[0].split('/');
@@ -79,7 +62,7 @@ export function fenStringToPositionObject(
       // if char is a letter, it is a piece
       if (isNaN(Number(char))) {
         // force orientation to flip fen string when black orientation used
-        const position = `${columnIndexToChessColumn(column, noOfColumns, 'white')}${rowIndexToChessRow(row, noOfRows, 'white')}`;
+        const position = `${columnIndexToChessColumn(column, 'white')}${rowIndexToChessRow(row, 'white')}`;
 
         // set piece at position (e.g. 0-0 for a8 on a normal board)
         positionObject[position] = {
@@ -119,7 +102,6 @@ function fenToPieceCode(piece: FenPieceString) {
 export function getPositionUpdates(
   oldPosition: PositionDataType,
   newPosition: PositionDataType,
-  noOfColumns: number,
   boardOrientation: 'white' | 'black',
 ) {
   const updates: { [square: string]: string } = {};
@@ -157,12 +139,10 @@ export function getPositionUpdates(
         const columnDifference = Math.abs(
           chessColumnToColumnIndex(
             candidateSquare.match(/^[a-z]+/)?.[0] ?? '',
-            noOfColumns,
             boardOrientation,
           ) -
             chessColumnToColumnIndex(
               newSquare.match(/^[a-z]+/)?.[0] ?? '',
-              noOfColumns,
               boardOrientation,
             ),
         );
@@ -173,7 +153,6 @@ export function getPositionUpdates(
         const isOldSquareLight =
           (chessColumnToColumnIndex(
             candidateSquare.match(/^[a-z]+/)?.[0] ?? '',
-            noOfColumns,
             boardOrientation,
           ) +
             Number(candidateSquare.match(/\d+$/)?.[0] ?? '')) %
@@ -182,7 +161,6 @@ export function getPositionUpdates(
         const isNewSquareLight =
           (chessColumnToColumnIndex(
             newSquare.match(/^[a-z]+/)?.[0] ?? '',
-            noOfColumns,
             boardOrientation,
           ) +
             Number(newSquare.match(/\d+$/)?.[0] ?? '')) %
@@ -275,26 +253,19 @@ export function getPositionUpdates(
 export function getRelativeCoords(
   boardOrientation: 'white' | 'black',
   boardWidth: number,
-  chessboardColumns: number,
-  chessboardRows: number,
   square: string,
 ) {
-  const squareWidth = boardWidth / chessboardColumns;
+  const squareWidth = boardWidth / 8;
 
   const x =
     chessColumnToColumnIndex(
       square.match(/^[a-z]+/)?.[0] ?? '',
-      chessboardColumns,
       boardOrientation,
     ) *
       squareWidth +
     squareWidth / 2;
   const y =
-    chessRowToRowIndex(
-      square.match(/\d+$/)?.[0] ?? '',
-      chessboardRows,
-      boardOrientation,
-    ) *
+    chessRowToRowIndex(square.match(/\d+$/)?.[0] ?? '', boardOrientation) *
       squareWidth +
     squareWidth / 2;
   return { x, y };
