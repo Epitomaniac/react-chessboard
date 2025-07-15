@@ -10,6 +10,7 @@ import { Piece } from './Piece';
 import { Square } from './Square';
 import { useChessboardContext } from './ChessboardProvider';
 import { defaultBoardStyle } from './defaults';
+import { PromotionDialog } from './PromotionDialog';
 
 export function Board() {
   const { board, boardStyle, currentPosition, draggingPiece, id } =
@@ -68,6 +69,7 @@ export function Board() {
 
         <Arrows boardWidth={boardWidth} boardHeight={boardHeight} />
         <Highlights boardWidth={boardWidth} boardHeight={boardHeight} />
+        <PromotionDialog boardWidth={boardWidth} />
       </div>
 
       <DragOverlay dropAnimation={null} modifiers={[snapCenterToCursor]}>

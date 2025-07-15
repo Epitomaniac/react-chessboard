@@ -59,9 +59,11 @@ type Defined<T> = T extends undefined ? never : T;
 type ContextType = {
   // id
   id: Defined<ChessboardOptions['id']>;
+  position: Defined<ChessboardOptions['position']>;
 
   // chessboard options
   pieces: Defined<ChessboardOptions['pieces']>;
+  promotionDialog: Defined<ChessboardOptions['promotionDialog']>;
 
   boardOrientation: Defined<ChessboardOptions['boardOrientation']>;
 
@@ -103,6 +105,7 @@ type ContextType = {
   onPieceClick: ChessboardOptions['onPieceClick'];
   onSquareClick: ChessboardOptions['onSquareClick'];
   onSquareRightClick: ChessboardOptions['onSquareRightClick'];
+  onPromotionPieceSelect: ChessboardOptions['onPromotionPieceSelect'];
   squareRenderer: ChessboardOptions['squareRenderer'];
 
   // internal state
@@ -137,7 +140,8 @@ export type ChessboardOptions = {
 
   // pieces and position
   pieces?: PieceRenderObject;
-  position?: string | PositionDataType; // FEN string (or object position) to set up the board
+  position?: string;
+  promotionDialog?: string;
 
   // board dimensions and orientation
   boardOrientation?: 'white' | 'black';
@@ -195,6 +199,7 @@ export type ChessboardOptions = {
     square,
     isDrawingArrow,
   }: SquareArrowHandlerArgs) => void;
+  onPromotionPieceSelect?: (piece: string) => void;
   squareRenderer?: ({
     piece,
     square,
@@ -213,6 +218,7 @@ export function ChessboardProvider({
     // pieces and position
     pieces = defaultPieces,
     position = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR',
+    promotionDialog = 'none',
 
     // board dimensions and orientation
     boardOrientation = 'white',
@@ -261,6 +267,7 @@ export function ChessboardProvider({
     onPieceDrop,
     onSquareClick,
     onSquareRightClick,
+    onPromotionPieceSelect,
     squareRenderer,
   } = options || {};
 
@@ -664,8 +671,10 @@ export function ChessboardProvider({
       value={{
         // chessboard options
         id,
+        position,
 
         pieces,
+        promotionDialog,
 
         boardOrientation,
 
@@ -702,6 +711,7 @@ export function ChessboardProvider({
         onPieceClick,
         onSquareClick,
         onSquareRightClick,
+        onPromotionPieceSelect,
         squareRenderer,
 
         // internal state
