@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useChessboardContext } from './ChessboardProvider';
 import { getRelativeCoords } from './utils';
 
@@ -14,9 +14,32 @@ export function PromotionDialog({ boardWidth }: Props) {
     pieces,
     onPromotionPieceSelect,
   } = useChessboardContext();
-  if (!boardWidth || promotionDialog === 'none') return;
 
-  const [isHover, setIsHover] = useState(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const [isHover, setIsHover] = useState<string | undefined>(undefined);
+  const [visible, setVisible] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (promotionDialog !== 'none') setVisible(true);
+  }, [promotionDialog]);
+
+  useEffect(() => {
+    if (!visible) return; // nothing to do if hidden
+
+    const handlePointerDown = (e: PointerEvent) => {
+      if (dialogRef.current && !dialogRef.current.contains(e.target as Node)) {
+        e.stopPropagation(); // don’t let the click move a piece
+        setVisible(false); // hide locally
+      }
+    };
+
+    // capture phase so we run before board’s own handlers
+    document.addEventListener('pointerdown', handlePointerDown, true);
+    return () =>
+      document.removeEventListener('pointerdown', handlePointerDown, true);
+  }, [visible]);
+
+  if (!boardWidth || !visible || promotionDialog === 'none') return null;
 
   const promotePieceColor = position.split(' ')[1];
 
@@ -38,11 +61,12 @@ export function PromotionDialog({ boardWidth }: Props) {
       justifyContent: 'center',
       alignItems: 'center',
       transform: `translate(0px, ${(3 * boardWidth) / 8}px)`,
-      width: '100%',
+      width: '50%',
       height: `${boardWidth / 4}px`,
       top: 0,
+      left: `${boardWidth / 4}px`,
       backgroundColor: 'white',
-      left: 0,
+      border: '2px solid gray',
     },
     vertical: {
       transform: isBottomRank
@@ -73,6 +97,7 @@ export function PromotionDialog({ boardWidth }: Props) {
 
   return (
     <div
+      ref={dialogRef}
       style={{
         position: 'absolute',
         // Bottom‑rank promotion forces the dialog to start from the bottom edge
@@ -93,13 +118,14 @@ export function PromotionDialog({ boardWidth }: Props) {
           key={option}
           onClick={() => {
             onPromotionPieceSelect?.(option);
+            setVisible(false);
           }}
-          onMouseOver={() => setIsHover(true)}
-          onMouseOut={() => setIsHover(false)}
+          onMouseOver={() => setIsHover(option)}
+          onMouseOut={() => setIsHover(undefined)}
           style={{
             cursor: 'pointer',
-            backgroundColor: isHover ? 'orange' : 'white',
-            borderRadius: '4px',
+
+            backgroundColor: isHover === option ? 'orange' : 'white',
             transition: 'all 0.1s ease-out',
           }}
         >
@@ -109,7 +135,7 @@ export function PromotionDialog({ boardWidth }: Props) {
             height={boardWidth / 8}
             style={{
               transition: 'all 0.1s ease-out',
-              transform: isHover ? 'scale(1)' : 'scale(0.85)',
+              transform: 'scale(0.85)',
             }}
           >
             <g>
