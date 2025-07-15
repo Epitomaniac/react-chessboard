@@ -55,18 +55,32 @@ export function PromotionDialog({ boardWidth }: Props) {
     (boardOrientation === 'white' && promotionDialog?.[1] === '1') ||
     (boardOrientation === 'black' && promotionDialog?.[1] === '8');
 
-  const dialogStyles = {
+  const dialogStyles: Record<
+    'modal' | 'modalContent' | 'vertical',
+    React.CSSProperties
+  > = {
     modal: {
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
-      transform: `translate(0px, ${(3 * boardWidth) / 8}px)`,
-      width: '50%',
-      height: `${boardWidth / 4}px`,
-      top: 0,
-      left: `${boardWidth / 4}px`,
+      zIndex: 1000,
+      width: boardWidth, // so it overlays the board only
+      height: boardWidth, // square overlay
+      pointerEvents: 'auto',
+    },
+    modalContent: {
       backgroundColor: 'white',
-      border: '2px solid gray',
+      borderRadius: '12px',
+      padding: '16px',
+      display: 'flex',
+      gap: '12px',
+      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+      pointerEvents: 'auto',
     },
     vertical: {
       transform: isBottomRank
@@ -95,47 +109,75 @@ export function PromotionDialog({ boardWidth }: Props) {
     return <PieceSvg />; // render it
   };
 
-  return (
+  return promotionDialog === 'modal' ? (
+    <div style={dialogStyles.modal}>
+      <div ref={dialogRef} style={dialogStyles.modalContent}>
+        {orderedPromotionOptions.map((option) => (
+          <div
+            key={option}
+            onClick={() => {
+              onPromotionPieceSelect?.(option);
+              setVisible(false);
+            }}
+            onMouseOver={() => setIsHover(option)}
+            onMouseOut={() => setIsHover(undefined)}
+            style={{
+              cursor: 'pointer',
+              borderRadius: '8px',
+              padding: '4px',
+              backgroundColor: isHover === option ? '#f0ad4e' : 'white',
+              transition: 'all 0.15s ease-in-out',
+            }}
+          >
+            <svg
+              viewBox="1 1 43 43"
+              width={boardWidth / 8}
+              height={boardWidth / 8}
+              style={{
+                transition: 'transform 0.15s ease-in-out',
+                transform: isHover === option ? 'scale(1)' : 'scale(0.9)',
+              }}
+            >
+              <g>
+                <Piece option={option} />
+              </g>
+            </svg>
+          </div>
+        ))}
+      </div>
+    </div>
+  ) : (
     <div
       ref={dialogRef}
       style={{
         position: 'absolute',
-        // Bottom‑rank promotion forces the dialog to start from the bottom edge
         top: isBottomRank ? undefined : `${dialogCoords?.y}px`,
         bottom: isBottomRank ? `${boardWidth - dialogCoords?.y}px` : undefined,
         left: `${dialogCoords?.x}px`,
         zIndex: 1000,
-
-        // add the right style variant
-        ...(promotionDialog.includes('modal')
-          ? dialogStyles.modal
-          : dialogStyles.vertical),
+        ...dialogStyles.vertical,
       }}
       title="Choose promotion piece"
     >
       {orderedPromotionOptions.map((option) => (
         <div
           key={option}
-          onClick={() => {
-            onPromotionPieceSelect?.(option);
-            setVisible(false);
-          }}
+          onClick={() => onPromotionPieceSelect?.(option)}
           onMouseOver={() => setIsHover(option)}
           onMouseOut={() => setIsHover(undefined)}
           style={{
             cursor: 'pointer',
-
             backgroundColor: isHover === option ? 'orange' : 'white',
             transition: 'all 0.1s ease-out',
           }}
         >
           <svg
-            viewBox={'1 1 43 43'}
+            viewBox="1 1 43 43"
             width={boardWidth / 8}
             height={boardWidth / 8}
             style={{
               transition: 'all 0.1s ease-out',
-              transform: 'scale(0.85)',
+              transform: isHover === option ? 'scale(1)' : 'scale(0.85)',
             }}
           >
             <g>
