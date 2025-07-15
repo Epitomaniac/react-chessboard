@@ -14,7 +14,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Promotion: Story = {
   render: () => {
-    const chessGameRef = useRef(new Chess('8/2P2k2/8/8/3K4/8/8/8 w - - 0 1'));
+    const chessGameRef = useRef(new Chess('8/8/1k6/8/8/5K2/2p5/8 b - - 0 1'));
     const chessGame = chessGameRef.current;
 
     const [chessPosition, setChessPosition] = useState(chessGame.fen());
@@ -37,30 +37,28 @@ export const Promotion: Story = {
         return false;
       }
 
-      console.log(piece?.pieceType, sourceSquare, targetSquare);
-
       if (
         (piece?.pieceType == 'wP' && targetSquare.includes('8')) ||
         (piece?.pieceType == 'bP' && targetSquare.includes('1'))
       ) {
         setPromotionSource(sourceSquare);
         setPromotionTarget(targetSquare);
-        setPromotionDialog({ type: 'modal', promotionSquare: 'none' });
+        setPromotionDialog({ type: 'vertical', promotionSquare: targetSquare });
         return false;
       }
 
-      const move = chessGame.move({
-        from: sourceSquare,
-        to: targetSquare,
-        promotion: promotionPiece ?? 'q',
-      });
+      try {
+        chessGame.move({
+          from: sourceSquare,
+          to: targetSquare,
+          promotion: promotionPiece ?? 'q',
+        }); // update the position state upon successful move to trigger a re-render of the chessboard
+        setChessPosition(chessGame.fen());
+        // return true as the move was successful
+        return true;
+      } catch (error) {}
 
-      if (!move) return false;
-
-      // update the position state upon successful move to trigger a re-render of the chessboard
-      setChessPosition(chessGame.fen());
-      // return true as the move was successful
-      return true;
+      return false;
     }
 
     function handlePromotionPieceSelect(piece: string) {

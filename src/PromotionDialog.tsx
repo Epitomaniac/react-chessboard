@@ -77,6 +77,7 @@ export function PromotionDialog({ boardWidth }: Props) {
     },
     modalContent: {
       backgroundColor: 'white',
+      border: '1px solid gray',
       borderRadius: '12px',
       padding: '16px',
       display: 'flex',
@@ -160,6 +161,10 @@ export function PromotionDialog({ boardWidth }: Props) {
         bottom: isBottomRank ? `${boardWidth - dialogCoords?.y}px` : undefined,
         left: `${dialogCoords?.x}px`,
         zIndex: 1000,
+        width: boardWidth / 8,
+        height: boardWidth / 2,
+        boxSizing: 'border-box',
+        border: '1px solid gray',
         ...dialogStyles.vertical,
       }}
       title="Choose promotion piece"
@@ -172,7 +177,7 @@ export function PromotionDialog({ boardWidth }: Props) {
           onMouseOut={() => setIsHover(undefined)}
           style={{
             cursor: 'pointer',
-            backgroundColor: isHover === option ? 'orange' : 'white',
+            backgroundColor: isHover === option ? 'orange' : '#cabfa6ff',
             transition: 'all 0.1s ease-out',
           }}
         >
@@ -181,6 +186,7 @@ export function PromotionDialog({ boardWidth }: Props) {
             width={boardWidth / 8}
             height={boardWidth / 8}
             style={{
+              display: 'block',
               transition: 'all 0.1s ease-out',
               transform: isHover === option ? 'scale(1)' : 'scale(0.85)',
             }}

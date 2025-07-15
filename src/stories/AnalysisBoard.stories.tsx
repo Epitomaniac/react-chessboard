@@ -73,7 +73,6 @@ export const AnalysisBoard: Story = {
                 color: 'engine',
               },
             ]);
-            console.log('New best move:', bestMove);
             prevMove = bestMove;
           }
         }, 2000);
