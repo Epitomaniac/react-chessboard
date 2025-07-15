@@ -141,7 +141,7 @@ export type ChessboardOptions = {
   // pieces and position
   pieces?: PieceRenderObject;
   position?: string;
-  promotionDialog?: string;
+  promotionDialog?: { type: string; promotionSquare: string };
 
   // board dimensions and orientation
   boardOrientation?: 'white' | 'black';
@@ -218,7 +218,7 @@ export function ChessboardProvider({
     // pieces and position
     pieces = defaultPieces,
     position = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR',
-    promotionDialog = 'none',
+    promotionDialog = { type: 'none', promotionSquare: 'none' },
 
     // board dimensions and orientation
     boardOrientation = 'white',

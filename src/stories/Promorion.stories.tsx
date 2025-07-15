@@ -19,7 +19,10 @@ export const Promotion: Story = {
     const chessGame = chessGameRef.current;
 
     const [chessPosition, setChessPosition] = useState(chessGame.fen());
-    const [promotionDialog, setPromotionDialog] = useState('none');
+    const [promotionDialog, setPromotionDialog] = useState({
+      type: 'none',
+      promotionSquare: 'none',
+    });
     const [promotionPiece, setPromotionPiece] = useState<string | undefined>(
       undefined,
     );
@@ -39,8 +42,7 @@ export const Promotion: Story = {
       ) {
         setPromotionSource(sourceSquare);
         setPromotionTarget(targetSquare);
-        console.log('dialog is set');
-        setPromotionDialog('modal');
+        setPromotionDialog({ type: 'modal', promotionSquare: 'none' });
         return false;
       }
 

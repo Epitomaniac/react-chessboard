@@ -20,7 +20,7 @@ export function PromotionDialog({ boardWidth }: Props) {
   const [visible, setVisible] = useState<boolean>(false);
 
   useEffect(() => {
-    if (promotionDialog !== 'none') setVisible(true);
+    if (promotionDialog.type !== 'none') setVisible(true);
   }, [promotionDialog]);
 
   useEffect(() => {
@@ -39,7 +39,7 @@ export function PromotionDialog({ boardWidth }: Props) {
       document.removeEventListener('pointerdown', handlePointerDown, true);
   }, [visible]);
 
-  if (!boardWidth || !visible || promotionDialog === 'none') return null;
+  if (!boardWidth || !visible || promotionDialog.type === 'none') return null;
 
   const promotePieceColor = position.split(' ')[1];
 
@@ -52,8 +52,10 @@ export function PromotionDialog({ boardWidth }: Props) {
 
   // Determines if promotion is happening on the bottom rank
   const isBottomRank =
-    (boardOrientation === 'white' && promotionDialog?.[1] === '1') ||
-    (boardOrientation === 'black' && promotionDialog?.[1] === '8');
+    (boardOrientation === 'white' &&
+      promotionDialog?.promotionSquare?.[1] === '1') ||
+    (boardOrientation === 'black' &&
+      promotionDialog?.promotionSquare[1] === '8');
 
   const dialogStyles: Record<
     'modal' | 'modalContent' | 'vertical',
@@ -89,11 +91,14 @@ export function PromotionDialog({ boardWidth }: Props) {
     },
   };
 
-  const dialogCoords = getRelativeCoords(
-    boardOrientation,
-    boardWidth,
-    promotionDialog,
-  );
+  const dialogCoords =
+    promotionDialog.type === 'vertical'
+      ? getRelativeCoords(
+          boardOrientation,
+          boardWidth,
+          promotionDialog.promotionSquare,
+        )
+      : { x: 0, y: 0 };
 
   // Reversing the order in which piece icons appear for vertical dialog if promotion occurs on the bottom rank
   const orderedPromotionOptions = isBottomRank
@@ -109,7 +114,7 @@ export function PromotionDialog({ boardWidth }: Props) {
     return <PieceSvg />; // render it
   };
 
-  return promotionDialog === 'modal' ? (
+  return promotionDialog.type === 'modal' ? (
     <div style={dialogStyles.modal}>
       <div ref={dialogRef} style={dialogStyles.modalContent}>
         {orderedPromotionOptions.map((option) => (
@@ -146,7 +151,7 @@ export function PromotionDialog({ boardWidth }: Props) {
         ))}
       </div>
     </div>
-  ) : (
+  ) : promotionDialog.type === 'vertical' ? (
     <div
       ref={dialogRef}
       style={{
@@ -187,5 +192,5 @@ export function PromotionDialog({ boardWidth }: Props) {
         </div>
       ))}
     </div>
-  );
+  ) : null;
 }
