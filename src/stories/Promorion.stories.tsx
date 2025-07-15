@@ -14,7 +14,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Promotion: Story = {
   render: () => {
-    const chessGameRef = useRef(new Chess('8/8/1k6/8/8/5K2/2p5/8 b - - 0 1'));
+    const chessGameRef = useRef(new Chess('8/5P2/1k6/8/8/5K2/2p5/8 b - - 0 1'));
     const chessGame = chessGameRef.current;
 
     const [chessPosition, setChessPosition] = useState(chessGame.fen());
@@ -27,13 +27,14 @@ export const Promotion: Story = {
     );
     const [promotionSource, setPromotionSource] = useState('');
     const [promotionTarget, setPromotionTarget] = useState('');
+    const [animationDuration, setAnimationDuration] = useState(300);
 
     function makeMove({
       piece,
       sourceSquare,
       targetSquare,
     }: PieceDropHandlerArgs) {
-      if (!targetSquare) {
+      if (!targetSquare || !piece?.pieceType.includes(chessGame.turn())) {
         return false;
       }
 
@@ -51,7 +52,7 @@ export const Promotion: Story = {
         chessGame.move({
           from: sourceSquare,
           to: targetSquare,
-          promotion: promotionPiece ?? 'q',
+          promotion: promotionPiece?.[1].toLowerCase() ?? 'q',
         }); // update the position state upon successful move to trigger a re-render of the chessboard
         setChessPosition(chessGame.fen());
         // return true as the move was successful
@@ -62,17 +63,25 @@ export const Promotion: Story = {
     }
 
     function handlePromotionPieceSelect(piece: string) {
-      setPromotionPiece(piece[1].toLowerCase());
+      setAnimationDuration(0);
+      setPromotionPiece(piece);
       setPromotionDialog({ type: 'none', promotionSquare: 'none' });
     }
 
     useEffect(() => {
       if (promotionPiece) {
         makeMove({
-          piece: { isSparePiece: false, pieceType: '', position: '' },
+          piece: {
+            isSparePiece: false,
+            pieceType: promotionPiece,
+            position: '',
+          },
           sourceSquare: promotionSource,
           targetSquare: promotionTarget,
         });
+        setTimeout(() => {
+          setAnimationDuration(300);
+        }, 0);
         setPromotionSource('');
         setPromotionTarget('');
       }
@@ -80,6 +89,7 @@ export const Promotion: Story = {
 
     const chessboardOptions = {
       id: 'promotion',
+      animationDuration,
       position: chessPosition,
       onPieceDrop: makeMove,
       onPromotionPieceSelect: handlePromotionPieceSelect,

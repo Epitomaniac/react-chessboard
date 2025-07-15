@@ -88,7 +88,7 @@ type ContextType = {
   numericNotationStyle: Defined<ChessboardOptions['numericNotationStyle']>;
   showNotation: Defined<ChessboardOptions['showNotation']>;
 
-  animationDurationInMs: Defined<ChessboardOptions['animationDurationInMs']>;
+  animationDuration: Defined<ChessboardOptions['animationDuration']>;
   showAnimations: Defined<ChessboardOptions['showAnimations']>;
 
   allowDragging: Defined<ChessboardOptions['allowDragging']>;
@@ -164,7 +164,7 @@ export type ChessboardOptions = {
   showNotation?: string;
 
   // animation
-  animationDurationInMs?: number;
+  animationDuration?: number;
   showAnimations?: boolean;
 
   // drag and drop
@@ -241,7 +241,7 @@ export function ChessboardProvider({
     showNotation = 'inside',
 
     // animation
-    animationDurationInMs = 300,
+    animationDuration = 300,
     showAnimations = true,
 
     // drag and drop
@@ -367,7 +367,7 @@ export function ChessboardProvider({
         setCurrentPosition(newPosition);
         setPositionDifferences({});
         setManuallyDroppedPieceAndSquare(null);
-      }, animationDurationInMs);
+      }, animationDuration);
 
       animationTimeoutRef.current = newTimeout;
       return;
@@ -391,7 +391,7 @@ export function ChessboardProvider({
       setCurrentPosition(newPosition);
       setPositionDifferences({});
       setWaitingForAnimationPosition(null);
-    }, animationDurationInMs);
+    }, animationDuration);
 
     // update the ref to the new timeout
     animationTimeoutRef.current = newTimeout;
@@ -693,7 +693,7 @@ export function ChessboardProvider({
         numericNotationStyle,
         showNotation,
 
-        animationDurationInMs,
+        animationDuration,
         showAnimations,
 
         allowDragging,

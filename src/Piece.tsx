@@ -24,7 +24,7 @@ export const Piece = memo(function Piece({
   const {
     id,
     allowDragging,
-    animationDurationInMs,
+    animationDuration,
     boardOrientation,
     canDragPiece,
     draggingPiece,
@@ -69,7 +69,7 @@ export const Piece = memo(function Piece({
           (Number(sourceSquare[1]) - Number(targetSquare[1])) *
           squareWidth
         }px)`,
-        transition: `transform ${animationDurationInMs}ms`,
+        transition: `transform ${animationDuration}ms`,
         position: 'relative', // creates a new stacking context so the piece stays above squares during animation
         zIndex: 10,
       });
