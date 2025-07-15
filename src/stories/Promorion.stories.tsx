@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState, useEffect, useRef } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { Chessboard } from '../../src';
@@ -29,7 +28,11 @@ export const Promotion: Story = {
     const [promotionSource, setPromotionSource] = useState('');
     const [promotionTarget, setPromotionTarget] = useState('');
 
-    function makeMove({ piece, sourceSquare, targetSquare }) {
+    function makeMove({
+      piece,
+      sourceSquare,
+      targetSquare,
+    }: PieceDropHandlerArgs) {
       if (!targetSquare) {
         return false;
       }
@@ -46,11 +49,13 @@ export const Promotion: Story = {
         return false;
       }
 
-      chessGame.move({
+      const move = chessGame.move({
         from: sourceSquare,
         to: targetSquare,
         promotion: promotionPiece ?? 'q',
       });
+
+      if (!move) return false;
 
       // update the position state upon successful move to trigger a re-render of the chessboard
       setChessPosition(chessGame.fen());
@@ -60,17 +65,18 @@ export const Promotion: Story = {
 
     function handlePromotionPieceSelect(piece: string) {
       setPromotionPiece(piece[1].toLowerCase());
-      setPromotionDialog('none');
+      setPromotionDialog({ type: 'none', promotionSquare: 'none' });
     }
 
     useEffect(() => {
       if (promotionPiece) {
         makeMove({
+          piece: { isSparePiece: false, pieceType: '', position: '' },
           sourceSquare: promotionSource,
           targetSquare: promotionTarget,
         });
-        setPromotionSource(null);
-        setPromotionTarget(null);
+        setPromotionSource('');
+        setPromotionTarget('');
       }
     }, [promotionPiece]);
 
