@@ -4,7 +4,9 @@ import { defaultArrowOptions, defaultHighlightOptions } from './defaults';
 type Defined<T> = T extends undefined ? never : T;
 type ContextType = {
     id: Defined<ChessboardOptions['id']>;
+    position: Defined<ChessboardOptions['position']>;
     pieces: Defined<ChessboardOptions['pieces']>;
+    promotionDialog: Defined<ChessboardOptions['promotionDialog']>;
     boardOrientation: Defined<ChessboardOptions['boardOrientation']>;
     boardStyle: Defined<ChessboardOptions['boardStyle']>;
     squareStyle: Defined<ChessboardOptions['squareStyle']>;
@@ -19,7 +21,7 @@ type ContextType = {
     alphaNotationStyle: Defined<ChessboardOptions['alphaNotationStyle']>;
     numericNotationStyle: Defined<ChessboardOptions['numericNotationStyle']>;
     showNotation: Defined<ChessboardOptions['showNotation']>;
-    animationDurationInMs: Defined<ChessboardOptions['animationDurationInMs']>;
+    animationDuration: Defined<ChessboardOptions['animationDuration']>;
     showAnimations: Defined<ChessboardOptions['showAnimations']>;
     allowDragging: Defined<ChessboardOptions['allowDragging']>;
     allowDrawingArrows: Defined<ChessboardOptions['allowDrawingArrows']>;
@@ -33,6 +35,7 @@ type ContextType = {
     onPieceClick: ChessboardOptions['onPieceClick'];
     onSquareClick: ChessboardOptions['onSquareClick'];
     onSquareRightClick: ChessboardOptions['onSquareRightClick'];
+    onPromotionPieceSelect: ChessboardOptions['onPromotionPieceSelect'];
     squareRenderer: ChessboardOptions['squareRenderer'];
     board: SquareDataType[][];
     isWrapped: boolean;
@@ -61,7 +64,11 @@ export declare const useChessboardContext: () => ContextType;
 export type ChessboardOptions = {
     id?: string;
     pieces?: PieceRenderObject;
-    position?: string | PositionDataType;
+    position?: string;
+    promotionDialog?: {
+        type: string;
+        promotionSquare: string;
+    };
     boardOrientation?: 'white' | 'black';
     boardStyle?: React.CSSProperties;
     squareStyle?: React.CSSProperties;
@@ -76,7 +83,7 @@ export type ChessboardOptions = {
     alphaNotationStyle?: React.CSSProperties;
     numericNotationStyle?: React.CSSProperties;
     showNotation?: string;
-    animationDurationInMs?: number;
+    animationDuration?: number;
     showAnimations?: boolean;
     allowDragging?: boolean;
     dragActivationDistance?: number;
@@ -95,6 +102,7 @@ export type ChessboardOptions = {
     onPieceDrop?: ({ piece, sourceSquare, targetSquare, }: PieceDropHandlerArgs) => boolean;
     onSquareClick?: ({ piece, square }: SquareHandlerArgs) => void;
     onSquareRightClick?: ({ piece, square, isDrawingArrow, }: SquareArrowHandlerArgs) => void;
+    onPromotionPieceSelect?: (piece: string) => void;
     squareRenderer?: ({ piece, square, children, }: SquareHandlerArgs & {
         children?: React.ReactNode;
     }) => React.JSX.Element;

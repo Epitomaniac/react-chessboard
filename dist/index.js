@@ -5149,7 +5149,7 @@ function ChessboardProvider({ children, options, }) {
     // id
     id = 'chessboard', 
     // pieces and position
-    pieces = defaultPieces, position = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR', 
+    pieces = defaultPieces, position = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR', promotionDialog = { type: 'none', promotionSquare: 'none' }, 
     // board dimensions and orientation
     boardOrientation = 'white', 
     // board and squares styles
@@ -5157,7 +5157,7 @@ function ChessboardProvider({ children, options, }) {
     // notation
     darkSquareNotationStyle = defaultDarkSquareNotationStyle, lightSquareNotationStyle = defaultLightSquareNotationStyle, alphaNotationStyle = defaultAlphaNotationStyle, numericNotationStyle = defaultNumericNotationStyle, showNotation = 'inside', 
     // animation
-    animationDurationInMs = 300, showAnimations = true, 
+    animationDuration = 300, showAnimations = true, 
     // drag and drop
     allowDragging = true, dragActivationDistance = 1, 
     // arrows
@@ -5165,7 +5165,7 @@ function ChessboardProvider({ children, options, }) {
     // highlights
     allowHighlights = true, highlights = [], highlightOptions = defaultHighlightOptions, 
     // handlers
-    canDragPiece, onArrowsChange, onMouseOverSquare, onPieceClick, onPieceDrag, onPieceDrop, onSquareClick, onSquareRightClick, squareRenderer, } = options || {};
+    canDragPiece, onArrowsChange, onMouseOverSquare, onPieceClick, onPieceDrag, onPieceDrop, onSquareClick, onSquareRightClick, onPromotionPieceSelect, squareRenderer, } = options || {};
     // the piece currently being dragged
     const [draggingPiece, setDraggingPiece] = React.useState(null);
     // the current position of pieces on the chessboard
@@ -5225,7 +5225,7 @@ function ChessboardProvider({ children, options, }) {
                 setCurrentPosition(newPosition);
                 setPositionDifferences({});
                 setManuallyDroppedPieceAndSquare(null);
-            }, animationDurationInMs);
+            }, animationDuration);
             animationTimeoutRef.current = newTimeout;
             return;
         }
@@ -5244,7 +5244,7 @@ function ChessboardProvider({ children, options, }) {
             setCurrentPosition(newPosition);
             setPositionDifferences({});
             setWaitingForAnimationPosition(null);
-        }, animationDurationInMs);
+        }, animationDuration);
         // update the ref to the new timeout
         animationTimeoutRef.current = newTimeout;
         // clear timeout on unmount
@@ -5430,7 +5430,9 @@ function ChessboardProvider({ children, options, }) {
     return (jsxRuntimeExports.jsx(ChessboardContext.Provider, { value: {
             // chessboard options
             id,
+            position,
             pieces,
+            promotionDialog,
             boardOrientation,
             boardStyle,
             squareStyle,
@@ -5445,7 +5447,7 @@ function ChessboardProvider({ children, options, }) {
             alphaNotationStyle,
             numericNotationStyle,
             showNotation,
-            animationDurationInMs,
+            animationDuration,
             showAnimations,
             allowDragging,
             allowDrawingArrows,
@@ -5459,6 +5461,7 @@ function ChessboardProvider({ children, options, }) {
             onPieceClick,
             onSquareClick,
             onSquareRightClick,
+            onPromotionPieceSelect,
             squareRenderer,
             // internal state
             board,
@@ -5638,7 +5641,7 @@ function Droppable({ children, squareId }) {
 }
 
 const Piece = React.memo(function Piece({ clone, isSparePiece = false, position, pieceType, }) {
-    const { id, allowDragging, animationDurationInMs, boardOrientation, canDragPiece, draggingPiece, draggingPieceStyle, draggingPieceGhostStyle, pieces, positionDifferences, onPieceClick, } = useChessboardContext();
+    const { id, allowDragging, animationDuration, boardOrientation, canDragPiece, draggingPiece, draggingPieceStyle, draggingPieceGhostStyle, pieces, positionDifferences, onPieceClick, } = useChessboardContext();
     const [animationStyle, setAnimationStyle] = React.useState({});
     let cursorStyle = clone ? 'grabbing' : 'grab';
     if (!allowDragging ||
@@ -5662,7 +5665,7 @@ const Piece = React.memo(function Piece({ clone, isSparePiece = false, position,
                     squareWidth}px, ${(boardOrientation === 'black' ? -1 : 1) *
                     (Number(sourceSquare[1]) - Number(targetSquare[1])) *
                     squareWidth}px)`,
-                transition: `transform ${animationDurationInMs}ms`,
+                transition: `transform ${animationDuration}ms`,
                 position: 'relative', // creates a new stacking context so the piece stays above squares during animation
                 zIndex: 10,
             });
@@ -5766,6 +5769,118 @@ const Square = React.memo(function Square({ children, squareId, isLightSquare, i
                 }, children: children }))] }));
 });
 
+function PromotionDialog({ boardWidth }) {
+    const { boardOrientation, position, promotionDialog, pieces, onPromotionPieceSelect, } = useChessboardContext();
+    const dialogRef = React.useRef(null);
+    const [isHover, setIsHover] = React.useState(undefined);
+    const [visible, setVisible] = React.useState(false);
+    React.useEffect(() => {
+        if (promotionDialog.type !== 'none')
+            setVisible(true);
+    }, [promotionDialog]);
+    React.useEffect(() => {
+        if (!visible)
+            return; // nothing to do if hidden
+        const handlePointerDown = (e) => {
+            if (dialogRef.current && !dialogRef.current.contains(e.target)) {
+                e.stopPropagation(); // don’t let the click move a piece
+                setVisible(false); // hide locally
+            }
+        };
+        // capture phase so we run before board’s own handlers
+        document.addEventListener('pointerdown', handlePointerDown, true);
+        return () => document.removeEventListener('pointerdown', handlePointerDown, true);
+    }, [visible]);
+    if (!boardWidth || !visible || promotionDialog.type === 'none')
+        return null;
+    const promotePieceColor = position.split(' ')[1];
+    const promotionOptions = [
+        `${promotePieceColor}Q`,
+        `${promotePieceColor}R`,
+        `${promotePieceColor}N`,
+        `${promotePieceColor}B`,
+    ];
+    // Determines if promotion is happening on the bottom rank
+    const isBottomRank = (boardOrientation === 'white' &&
+        promotionDialog?.promotionSquare?.[1] === '1') ||
+        (boardOrientation === 'black' &&
+            promotionDialog?.promotionSquare[1] === '8');
+    const dialogStyles = {
+        modal: {
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000,
+            width: boardWidth, // so it overlays the board only
+            height: boardWidth, // square overlay
+            pointerEvents: 'auto',
+        },
+        modalContent: {
+            backgroundColor: 'white',
+            border: '1px solid gray',
+            borderRadius: '12px',
+            padding: '16px',
+            display: 'flex',
+            gap: '12px',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+            pointerEvents: 'auto',
+        },
+        vertical: {
+            transform: isBottomRank
+                ? `translate(${-boardWidth / 16}px, ${+boardWidth / 16}px)`
+                : `translate(${-boardWidth / 16}px, ${-boardWidth / 16}px)`,
+        },
+    };
+    const dialogCoords = promotionDialog.type === 'vertical'
+        ? getRelativeCoords(boardOrientation, boardWidth, promotionDialog.promotionSquare)
+        : { x: 0, y: 0 };
+    // Reversing the order in which piece icons appear for vertical dialog if promotion occurs on the bottom rank
+    const orderedPromotionOptions = isBottomRank
+        ? promotionOptions.reverse()
+        : promotionOptions;
+    const Piece = ({ option }) => {
+        const PieceSvg = pieces[option]; // grab the component
+        return jsxRuntimeExports.jsx(PieceSvg, {}); // render it
+    };
+    return promotionDialog.type === 'modal' ? (jsxRuntimeExports.jsx("div", { style: dialogStyles.modal, children: jsxRuntimeExports.jsx("div", { ref: dialogRef, style: dialogStyles.modalContent, children: orderedPromotionOptions.map((option) => (jsxRuntimeExports.jsx("div", { onClick: () => {
+                    onPromotionPieceSelect?.(option);
+                    setVisible(false);
+                }, onMouseOver: () => setIsHover(option), onMouseOut: () => setIsHover(undefined), style: {
+                    cursor: 'pointer',
+                    borderRadius: '8px',
+                    padding: '4px',
+                    backgroundColor: isHover === option ? '#f0ad4e' : 'white',
+                    transition: 'all 0.15s ease-in-out',
+                }, children: jsxRuntimeExports.jsx("svg", { viewBox: "1 1 43 43", width: boardWidth / 8, height: boardWidth / 8, style: {
+                        transition: 'transform 0.15s ease-in-out',
+                        transform: isHover === option ? 'scale(1)' : 'scale(0.9)',
+                    }, children: jsxRuntimeExports.jsx("g", { children: jsxRuntimeExports.jsx(Piece, { option: option }) }) }) }, option))) }) })) : promotionDialog.type === 'vertical' ? (jsxRuntimeExports.jsx("div", { ref: dialogRef, style: {
+            position: 'absolute',
+            top: isBottomRank ? undefined : `${dialogCoords?.y}px`,
+            bottom: isBottomRank ? `${boardWidth - dialogCoords?.y}px` : undefined,
+            left: `${dialogCoords?.x}px`,
+            zIndex: 1000,
+            width: boardWidth / 8,
+            height: boardWidth / 2,
+            boxSizing: 'border-box',
+            border: '1px solid gray',
+            ...dialogStyles.vertical,
+        }, title: "Choose promotion piece", children: orderedPromotionOptions.map((option) => (jsxRuntimeExports.jsx("div", { onClick: () => onPromotionPieceSelect?.(option), onMouseOver: () => setIsHover(option), onMouseOut: () => setIsHover(undefined), style: {
+                cursor: 'pointer',
+                backgroundColor: isHover === option ? 'orange' : '#cabfa6ff',
+                transition: 'all 0.1s ease-out',
+            }, children: jsxRuntimeExports.jsx("svg", { viewBox: "1 1 43 43", width: boardWidth / 8, height: boardWidth / 8, style: {
+                    display: 'block',
+                    transition: 'all 0.1s ease-out',
+                    transform: isHover === option ? 'scale(1)' : 'scale(0.85)',
+                }, children: jsxRuntimeExports.jsx("g", { children: jsxRuntimeExports.jsx(Piece, { option: option }) }) }) }, option))) })) : null;
+}
+
 function Board() {
     const { board, boardStyle, currentPosition, draggingPiece, id } = useChessboardContext();
     const boardRef = React.useRef(null);
@@ -5787,7 +5902,7 @@ function Board() {
     return (jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [jsxRuntimeExports.jsxs("div", { id: `${id}-board`, ref: boardRef, style: { ...defaultBoardStyle(), ...boardStyle }, children: [board.map((row) => row.map((square) => {
                         const piece = currentPosition[square.squareId];
                         return (jsxRuntimeExports.jsx(Droppable, { squareId: square.squareId, children: ({ isOver }) => (jsxRuntimeExports.jsx(Square, { isOver: isOver, ...square, children: piece ? (jsxRuntimeExports.jsx(Draggable, { isSparePiece: false, position: square.squareId, pieceType: piece.pieceType, children: jsxRuntimeExports.jsx(Piece, { ...piece, position: square.squareId }) })) : null })) }, square.squareId));
-                    })), jsxRuntimeExports.jsx(Arrows, { boardWidth: boardWidth, boardHeight: boardHeight }), jsxRuntimeExports.jsx(Highlights, { boardWidth: boardWidth, boardHeight: boardHeight })] }), jsxRuntimeExports.jsx(DragOverlay, { dropAnimation: null, modifiers: [snapCenterToCursor], children: draggingPiece ? (jsxRuntimeExports.jsx(Piece, { clone: true, position: draggingPiece.position, pieceType: draggingPiece.pieceType })) : null })] }));
+                    })), jsxRuntimeExports.jsx(Arrows, { boardWidth: boardWidth, boardHeight: boardHeight }), jsxRuntimeExports.jsx(Highlights, { boardWidth: boardWidth, boardHeight: boardHeight }), jsxRuntimeExports.jsx(PromotionDialog, { boardWidth: boardWidth })] }), jsxRuntimeExports.jsx(DragOverlay, { dropAnimation: null, modifiers: [snapCenterToCursor], children: draggingPiece ? (jsxRuntimeExports.jsx(Piece, { clone: true, position: draggingPiece.position, pieceType: draggingPiece.pieceType })) : null })] }));
 }
 
 function Chessboard({ options }) {
