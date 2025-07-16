@@ -80,6 +80,7 @@ export const Piece = memo(function Piece({
 
   return (
     <div
+      tabIndex={-1} // explicitly disable tab focus
       id={`${id}-piece-${pieceType}-${position}`}
       data-piece={pieceType}
       style={{
@@ -93,6 +94,7 @@ export const Piece = memo(function Piece({
         width: '100%',
         height: '100%',
         cursor: cursorStyle,
+        outline: 'none',
         touchAction: 'none', // prevent zooming and scrolling on touch devices
       }}
       onClick={() =>

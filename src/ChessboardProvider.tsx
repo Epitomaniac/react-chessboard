@@ -404,7 +404,7 @@ export function ChessboardProvider({
     };
   }, [positionFen]);
 
-  // if the dimensions change, we need to recreate the pieces array
+  // if the orientation changes, we need to recreate the pieces array
   useEffect(() => {
     setCurrentPosition(
       typeof positionFen === 'string'
@@ -413,7 +413,7 @@ export function ChessboardProvider({
     );
   }, [boardOrientation]);
 
-  // only redraw the board when the dimensions or board orientation change
+  // only redraw the board when the orientation changes
   const board = useMemo(
     () => generateBoard(boardOrientation),
     [boardOrientation],

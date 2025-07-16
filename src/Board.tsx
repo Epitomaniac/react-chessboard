@@ -59,7 +59,13 @@ export function Board() {
             return (
               <Droppable key={square.squareId} squareId={square.squareId}>
                 {({ isOver }) => (
-                  <Square isOver={isOver} {...square}>
+                  <Square
+                    isOver={isOver}
+                    {...square}
+                    hasMovablePiece={
+                      !!piece && piece.pieceType[0].toLowerCase() === playerSide
+                    }
+                  >
                     {piece ? (
                       <Draggable
                         isMovable={

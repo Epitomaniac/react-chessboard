@@ -1,5 +1,4 @@
 import { memo } from 'react';
-
 import { useChessboardContext } from './ChessboardProvider';
 import {
   defaultAlphaNotationStyle,
@@ -16,6 +15,7 @@ import { columnIndexToChessColumn } from './utils';
 
 type SquareProps = {
   children?: React.ReactNode;
+  hasMovablePiece?: boolean;
   squareId: SquareDataType['squareId'];
   isLightSquare: SquareDataType['isLightSquare'];
   isOver: boolean;
@@ -23,6 +23,7 @@ type SquareProps = {
 
 export const Square = memo(function Square({
   children,
+  hasMovablePiece,
   squareId,
   isLightSquare,
   isOver,
@@ -88,7 +89,7 @@ export const Square = memo(function Square({
         }
       }}
       onMouseUp={(e) => {
-        if (e.button === 0) {
+        if (e.button === 0 && !hasMovablePiece) {
           clearArrows();
         }
         if (e.button === 2) {
