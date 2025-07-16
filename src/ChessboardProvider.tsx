@@ -139,7 +139,7 @@ export type ChessboardOptions = {
   id?: string;
 
   // pieces and position
-  sideToMove?: 'w' | 'b' | null;
+  sideToMove?: string | null;
   pieces?: PieceRenderObject;
   positionFen?: string;
   promotionDialog?: { type: string; promotionSquare: string };
