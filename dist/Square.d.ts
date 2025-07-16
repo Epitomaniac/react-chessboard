@@ -1,6 +1,7 @@
 import { SquareDataType } from './types';
 type SquareProps = {
     children?: React.ReactNode;
+    hasMovablePiece?: boolean;
     squareId: SquareDataType['squareId'];
     isLightSquare: SquareDataType['isLightSquare'];
     isOver: boolean;

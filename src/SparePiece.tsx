@@ -7,7 +7,12 @@ type SparePieceProps = {
 
 export function SparePiece({ pieceType }: SparePieceProps) {
   return (
-    <Draggable isSparePiece position={pieceType} pieceType={pieceType}>
+    <Draggable
+      isSparePiece
+      position={pieceType}
+      pieceType={pieceType}
+      isMovable={true}
+    >
       <Piece isSparePiece pieceType={pieceType} position={pieceType} />
     </Draggable>
   );

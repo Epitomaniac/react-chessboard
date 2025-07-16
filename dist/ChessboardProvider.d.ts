@@ -4,7 +4,8 @@ import { defaultArrowOptions, defaultHighlightOptions } from './defaults';
 type Defined<T> = T extends undefined ? never : T;
 type ContextType = {
     id: Defined<ChessboardOptions['id']>;
-    position: Defined<ChessboardOptions['position']>;
+    positionFen: Defined<ChessboardOptions['positionFen']>;
+    sideToMove: Defined<ChessboardOptions['sideToMove']>;
     pieces: Defined<ChessboardOptions['pieces']>;
     promotionDialog: Defined<ChessboardOptions['promotionDialog']>;
     boardOrientation: Defined<ChessboardOptions['boardOrientation']>;
@@ -30,7 +31,6 @@ type ContextType = {
     allowHighlights: Defined<ChessboardOptions['allowHighlights']>;
     highlights: Defined<ChessboardOptions['highlights']>;
     highlightOptions: Defined<ChessboardOptions['highlightOptions']>;
-    canDragPiece: ChessboardOptions['canDragPiece'];
     onMouseOverSquare: ChessboardOptions['onMouseOverSquare'];
     onPieceClick: ChessboardOptions['onPieceClick'];
     onSquareClick: ChessboardOptions['onSquareClick'];
@@ -63,8 +63,9 @@ type ContextType = {
 export declare const useChessboardContext: () => ContextType;
 export type ChessboardOptions = {
     id?: string;
+    sideToMove?: string | null;
     pieces?: PieceRenderObject;
-    position?: string;
+    positionFen?: string;
     promotionDialog?: {
         type: string;
         promotionSquare: string;
@@ -94,7 +95,6 @@ export type ChessboardOptions = {
     allowHighlights?: boolean;
     highlights?: Highlight[];
     highlightOptions?: typeof defaultHighlightOptions;
-    canDragPiece?: ({ isSparePiece, piece, square }: PieceHandlerArgs) => boolean;
     onArrowsChange?: (arrows: Arrow[]) => void;
     onMouseOverSquare?: ({ piece, square }: SquareHandlerArgs) => void;
     onPieceClick?: ({ isSparePiece, piece, square }: PieceHandlerArgs) => void;

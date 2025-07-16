@@ -5149,9 +5149,9 @@ function ChessboardProvider({ children, options, }) {
     // id
     id = 'chessboard', 
     // pieces and position
-    pieces = defaultPieces, position = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR', promotionDialog = { type: 'none', promotionSquare: 'none' }, 
+    pieces = defaultPieces, positionFen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', promotionDialog = { type: 'none', promotionSquare: 'none' }, 
     // board dimensions and orientation
-    boardOrientation = 'white', 
+    boardOrientation = 'white', sideToMove = null, 
     // board and squares styles
     boardStyle = defaultBoardStyle(), squareStyle = defaultSquareStyle, squareStyles = {}, darkSquareStyle = defaultDarkSquareStyle, lightSquareStyle = defaultLightSquareStyle, dropSquareStyle = defaultDropSquareStyle, draggingPieceStyle = defaultDraggingPieceStyle, draggingPieceGhostStyle = defaultDraggingPieceGhostStyle, 
     // notation
@@ -5165,13 +5165,13 @@ function ChessboardProvider({ children, options, }) {
     // highlights
     allowHighlights = true, highlights = [], highlightOptions = defaultHighlightOptions, 
     // handlers
-    canDragPiece, onArrowsChange, onMouseOverSquare, onPieceClick, onPieceDrag, onPieceDrop, onSquareClick, onSquareRightClick, onPromotionPieceSelect, squareRenderer, } = options || {};
+    onArrowsChange, onMouseOverSquare, onPieceClick, onPieceDrag, onPieceDrop, onSquareClick, onSquareRightClick, onPromotionPieceSelect, squareRenderer, } = options || {};
     // the piece currently being dragged
     const [draggingPiece, setDraggingPiece] = React.useState(null);
     // the current position of pieces on the chessboard
-    const [currentPosition, setCurrentPosition] = React.useState(typeof position === 'string'
-        ? fenStringToPositionObject(position)
-        : position);
+    const [currentPosition, setCurrentPosition] = React.useState(typeof positionFen === 'string'
+        ? fenStringToPositionObject(positionFen)
+        : positionFen);
     // calculated differences between current and incoming positions
     const [positionDifferences, setPositionDifferences] = React.useState({});
     // if the latest move was a manual drop
@@ -5188,9 +5188,9 @@ function ChessboardProvider({ children, options, }) {
     // if the position changes, we need to recreate the pieces array
     React.useEffect(() => {
         clearArrows();
-        const newPosition = typeof position === 'string'
-            ? fenStringToPositionObject(position)
-            : position;
+        const newPosition = typeof positionFen === 'string'
+            ? fenStringToPositionObject(positionFen)
+            : positionFen;
         // if no animation, just set the position
         if (!showAnimations) {
             setCurrentPosition(newPosition);
@@ -5253,14 +5253,14 @@ function ChessboardProvider({ children, options, }) {
                 clearTimeout(animationTimeoutRef.current);
             }
         };
-    }, [position]);
-    // if the dimensions change, we need to recreate the pieces array
+    }, [positionFen]);
+    // if the orientation changes, we need to recreate the pieces array
     React.useEffect(() => {
-        setCurrentPosition(typeof position === 'string'
-            ? fenStringToPositionObject(position)
-            : position);
+        setCurrentPosition(typeof positionFen === 'string'
+            ? fenStringToPositionObject(positionFen)
+            : positionFen);
     }, [boardOrientation]);
-    // only redraw the board when the dimensions or board orientation change
+    // only redraw the board when the orientation changes
     const board = React.useMemo(() => generateBoard(boardOrientation), [boardOrientation]);
     // acts as an event listener for the chessboard's arrows prop
     React.useEffect(() => {
@@ -5430,8 +5430,9 @@ function ChessboardProvider({ children, options, }) {
     return (jsxRuntimeExports.jsx(ChessboardContext.Provider, { value: {
             // chessboard options
             id,
-            position,
+            positionFen,
             pieces,
+            sideToMove,
             promotionDialog,
             boardOrientation,
             boardStyle,
@@ -5456,7 +5457,6 @@ function ChessboardProvider({ children, options, }) {
             allowHighlights,
             highlights,
             highlightOptions,
-            canDragPiece,
             onMouseOverSquare,
             onPieceClick,
             onSquareClick,
@@ -5614,21 +5614,15 @@ function Highlights({ boardWidth, boardHeight }) {
         }) }));
 }
 
-function Draggable({ children, isSparePiece = false, pieceType, position, }) {
-    const { allowDragging, canDragPiece } = useChessboardContext();
+function Draggable({ children, isMovable, isSparePiece = false, pieceType, position, }) {
+    const { allowDragging } = useChessboardContext();
     const { setNodeRef, attributes, listeners } = useDraggable({
         id: position,
         data: {
             isSparePiece,
             pieceType,
         },
-        disabled: !allowDragging ||
-            (canDragPiece &&
-                !canDragPiece({
-                    piece: { pieceType },
-                    isSparePiece,
-                    square: position,
-                })),
+        disabled: !allowDragging || !isMovable,
     });
     return (jsxRuntimeExports.jsx("div", { ref: setNodeRef, ...attributes, ...listeners, children: children }));
 }
@@ -5640,14 +5634,12 @@ function Droppable({ children, squareId }) {
     return jsxRuntimeExports.jsx("div", { ref: setNodeRef, children: children({ isOver }) });
 }
 
-const Piece = React.memo(function Piece({ clone, isSparePiece = false, position, pieceType, }) {
-    const { id, allowDragging, animationDuration, boardOrientation, canDragPiece, draggingPiece, draggingPieceStyle, draggingPieceGhostStyle, pieces, positionDifferences, onPieceClick, } = useChessboardContext();
+const Piece = React.memo(function Piece({ clone, isMovable, isSparePiece = false, position, pieceType, }) {
+    const { id, allowDragging, animationDuration, boardOrientation, draggingPiece, draggingPieceStyle, draggingPieceGhostStyle, pieces, positionDifferences, onPieceClick, } = useChessboardContext();
     const [animationStyle, setAnimationStyle] = React.useState({});
     let cursorStyle = clone ? 'grabbing' : 'grab';
-    if (!allowDragging ||
-        (canDragPiece &&
-            !canDragPiece({ piece: { pieceType }, isSparePiece, square: position }))) {
-        cursorStyle = 'pointer';
+    if (!clone && (!allowDragging || !isMovable)) {
+        cursorStyle = 'default';
     }
     React.useEffect(() => {
         if (positionDifferences[position]) {
@@ -5675,7 +5667,7 @@ const Piece = React.memo(function Piece({ clone, isSparePiece = false, position,
         }
     }, [positionDifferences]);
     const PieceSvg = pieces[pieceType];
-    return (jsxRuntimeExports.jsx("div", { id: `${id}-piece-${pieceType}-${position}`, "data-piece": pieceType, style: {
+    return (jsxRuntimeExports.jsx("div", { tabIndex: -1, id: `${id}-piece-${pieceType}-${position}`, "data-piece": pieceType, style: {
             ...animationStyle,
             ...(clone
                 ? { ...defaultDraggingPieceStyle, ...draggingPieceStyle }
@@ -5686,11 +5678,12 @@ const Piece = React.memo(function Piece({ clone, isSparePiece = false, position,
             width: '100%',
             height: '100%',
             cursor: cursorStyle,
+            outline: 'none',
             touchAction: 'none', // prevent zooming and scrolling on touch devices
         }, onClick: () => onPieceClick?.({ isSparePiece, piece: { pieceType }, square: position }), children: jsxRuntimeExports.jsx(PieceSvg, {}) }));
 });
 
-const Square = React.memo(function Square({ children, squareId, isLightSquare, isOver, }) {
+const Square = React.memo(function Square({ children, hasMovablePiece, squareId, isLightSquare, isOver, }) {
     const { id, allowDrawingArrows, boardOrientation, currentPosition, squareStyle, squareStyles, darkSquareStyle, lightSquareStyle, dropSquareStyle, darkSquareNotationStyle, lightSquareNotationStyle, alphaNotationStyle, numericNotationStyle, showNotation, onMouseOverSquare, onSquareClick, onSquareRightClick, squareRenderer, newArrowStartSquare, newArrowOverSquare, clearArrows, setNewArrowStartSquare, setNewArrowOverSquare, drawArrow, } = useChessboardContext();
     const column = squareId.match(/^[a-z]+/)?.[0];
     const row = squareId.match(/\d+$/)?.[0];
@@ -5715,7 +5708,7 @@ const Square = React.memo(function Square({ children, squareId, isLightSquare, i
                 setNewArrowStartSquare(squareId);
             }
         }, onMouseUp: (e) => {
-            if (e.button === 0) {
+            if (e.button === 0 && !hasMovablePiece) {
                 clearArrows();
             }
             if (e.button === 2) {
@@ -5770,7 +5763,7 @@ const Square = React.memo(function Square({ children, squareId, isLightSquare, i
 });
 
 function PromotionDialog({ boardWidth }) {
-    const { boardOrientation, position, promotionDialog, pieces, onPromotionPieceSelect, } = useChessboardContext();
+    const { boardOrientation, positionFen, promotionDialog, pieces, onPromotionPieceSelect, } = useChessboardContext();
     const dialogRef = React.useRef(null);
     const [isHover, setIsHover] = React.useState(undefined);
     const [visible, setVisible] = React.useState(false);
@@ -5793,7 +5786,7 @@ function PromotionDialog({ boardWidth }) {
     }, [visible]);
     if (!boardWidth || !visible || promotionDialog.type === 'none')
         return null;
-    const promotePieceColor = position.split(' ')[1];
+    const promotePieceColor = positionFen.split(' ')[1];
     const promotionOptions = [
         `${promotePieceColor}Q`,
         `${promotePieceColor}R`,
@@ -5882,10 +5875,12 @@ function PromotionDialog({ boardWidth }) {
 }
 
 function Board() {
-    const { board, boardStyle, currentPosition, draggingPiece, id } = useChessboardContext();
+    const { board, positionFen, sideToMove, boardStyle, currentPosition, draggingPiece, id, } = useChessboardContext();
     const boardRef = React.useRef(null);
     const [boardWidth, setBoardWidth] = React.useState(boardRef.current?.clientWidth);
     const [boardHeight, setBoardHeight] = React.useState(boardRef.current?.clientHeight);
+    // determine which side has the move; this is used to determined whether the rendered piece is legal to move
+    const playerSide = sideToMove ?? positionFen.split(' ')[1];
     // if the board dimensions change, update the board width and height
     React.useEffect(() => {
         if (boardRef.current) {
@@ -5901,7 +5896,7 @@ function Board() {
     }, [boardRef.current]);
     return (jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [jsxRuntimeExports.jsxs("div", { id: `${id}-board`, ref: boardRef, style: { ...defaultBoardStyle(), ...boardStyle }, children: [board.map((row) => row.map((square) => {
                         const piece = currentPosition[square.squareId];
-                        return (jsxRuntimeExports.jsx(Droppable, { squareId: square.squareId, children: ({ isOver }) => (jsxRuntimeExports.jsx(Square, { isOver: isOver, ...square, children: piece ? (jsxRuntimeExports.jsx(Draggable, { isSparePiece: false, position: square.squareId, pieceType: piece.pieceType, children: jsxRuntimeExports.jsx(Piece, { ...piece, position: square.squareId }) })) : null })) }, square.squareId));
+                        return (jsxRuntimeExports.jsx(Droppable, { squareId: square.squareId, children: ({ isOver }) => (jsxRuntimeExports.jsx(Square, { isOver: isOver, ...square, hasMovablePiece: !!piece && piece.pieceType[0].toLowerCase() === playerSide, children: piece ? (jsxRuntimeExports.jsx(Draggable, { isMovable: piece.pieceType[0].toLowerCase() === playerSide, isSparePiece: false, position: square.squareId, pieceType: piece.pieceType, children: jsxRuntimeExports.jsx(Piece, { ...piece, position: square.squareId, isMovable: piece.pieceType[0].toLowerCase() === playerSide }) })) : null })) }, square.squareId));
                     })), jsxRuntimeExports.jsx(Arrows, { boardWidth: boardWidth, boardHeight: boardHeight }), jsxRuntimeExports.jsx(Highlights, { boardWidth: boardWidth, boardHeight: boardHeight }), jsxRuntimeExports.jsx(PromotionDialog, { boardWidth: boardWidth })] }), jsxRuntimeExports.jsx(DragOverlay, { dropAnimation: null, modifiers: [snapCenterToCursor], children: draggingPiece ? (jsxRuntimeExports.jsx(Piece, { clone: true, position: draggingPiece.position, pieceType: draggingPiece.pieceType })) : null })] }));
 }
 
@@ -5925,7 +5920,7 @@ function Chessboard({ options }) {
 }
 
 function SparePiece({ pieceType }) {
-    return (jsxRuntimeExports.jsx(Draggable, { isSparePiece: true, position: pieceType, pieceType: pieceType, children: jsxRuntimeExports.jsx(Piece, { isSparePiece: true, pieceType: pieceType, position: pieceType }) }));
+    return (jsxRuntimeExports.jsx(Draggable, { isSparePiece: true, position: pieceType, pieceType: pieceType, isMovable: true, children: jsxRuntimeExports.jsx(Piece, { isSparePiece: true, pieceType: pieceType, position: pieceType }) }));
 }
 
 exports.Chessboard = Chessboard;
