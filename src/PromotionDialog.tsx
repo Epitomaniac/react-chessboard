@@ -9,7 +9,7 @@ type Props = {
 export function PromotionDialog({ boardWidth }: Props) {
   const {
     boardOrientation,
-    position,
+    positionFen,
     promotionDialog,
     pieces,
     onPromotionPieceSelect,
@@ -41,7 +41,7 @@ export function PromotionDialog({ boardWidth }: Props) {
 
   if (!boardWidth || !visible || promotionDialog.type === 'none') return null;
 
-  const promotePieceColor = position.split(' ')[1];
+  const promotePieceColor = positionFen.split(' ')[1];
 
   const promotionOptions = [
     `${promotePieceColor}Q`,

@@ -13,15 +13,22 @@ import { defaultBoardStyle } from './defaults';
 import { PromotionDialog } from './PromotionDialog';
 
 export function Board() {
-  const { board, positionFen, boardStyle, currentPosition, draggingPiece, id } =
-    useChessboardContext();
+  const {
+    board,
+    positionFen,
+    sideToMove,
+    boardStyle,
+    currentPosition,
+    draggingPiece,
+    id,
+  } = useChessboardContext();
   const boardRef = useRef<HTMLDivElement>(null);
   const [boardWidth, setBoardWidth] = useState(boardRef.current?.clientWidth);
   const [boardHeight, setBoardHeight] = useState(
     boardRef.current?.clientHeight,
   );
   // determine which side has the move; this is used to determined whether the rendered piece is legal to move
-  const sideToMove = positionFen.split(' ')[1];
+  const playerSide = sideToMove ?? positionFen.split(' ')[1];
 
   // if the board dimensions change, update the board width and height
   useEffect(() => {
@@ -55,6 +62,9 @@ export function Board() {
                   <Square isOver={isOver} {...square}>
                     {piece ? (
                       <Draggable
+                        isMovable={
+                          piece.pieceType[0].toLowerCase() === playerSide
+                        }
                         isSparePiece={false}
                         position={square.squareId}
                         pieceType={piece.pieceType}
@@ -63,7 +73,7 @@ export function Board() {
                           {...piece}
                           position={square.squareId}
                           isMovable={
-                            piece.pieceType[0].toLowerCase() === sideToMove
+                            piece.pieceType[0].toLowerCase() === playerSide
                           }
                         />
                       </Draggable>

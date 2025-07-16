@@ -5,6 +5,7 @@ import type { DraggingPieceDataType, PieceDataType } from './types';
 
 type DraggableProps = {
   children: React.ReactNode;
+  isMovable: boolean;
   isSparePiece?: DraggingPieceDataType['isSparePiece'];
   pieceType: PieceDataType['pieceType'];
   position: DraggingPieceDataType['position'];
@@ -12,6 +13,7 @@ type DraggableProps = {
 
 export function Draggable({
   children,
+  isMovable,
   isSparePiece = false,
   pieceType,
   position,
@@ -24,7 +26,7 @@ export function Draggable({
       isSparePiece,
       pieceType,
     },
-    disabled: !allowDragging,
+    disabled: !allowDragging || !isMovable,
   });
 
   return (

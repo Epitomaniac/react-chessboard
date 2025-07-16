@@ -57,11 +57,12 @@ import {
 type Defined<T> = T extends undefined ? never : T;
 
 type ContextType = {
-  // id
+  // id and fen
   id: Defined<ChessboardOptions['id']>;
   positionFen: Defined<ChessboardOptions['positionFen']>;
 
   // chessboard options
+  sideToMove: Defined<ChessboardOptions['sideToMove']>;
   pieces: Defined<ChessboardOptions['pieces']>;
   promotionDialog: Defined<ChessboardOptions['promotionDialog']>;
 
@@ -138,6 +139,7 @@ export type ChessboardOptions = {
   id?: string;
 
   // pieces and position
+  sideToMove?: 'w' | 'b' | null;
   pieces?: PieceRenderObject;
   positionFen?: string;
   promotionDialog?: { type: string; promotionSquare: string };
@@ -220,6 +222,7 @@ export function ChessboardProvider({
 
     // board dimensions and orientation
     boardOrientation = 'white',
+    sideToMove = null,
 
     // board and squares styles
     boardStyle = defaultBoardStyle(),
@@ -671,6 +674,7 @@ export function ChessboardProvider({
         positionFen,
 
         pieces,
+        sideToMove,
         promotionDialog,
 
         boardOrientation,

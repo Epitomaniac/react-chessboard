@@ -40,7 +40,7 @@ export const Piece = memo(function Piece({
 
   let cursorStyle = clone ? 'grabbing' : 'grab';
 
-  if (!allowDragging || !isMovable) {
+  if (!clone && (!allowDragging || !isMovable)) {
     cursorStyle = 'default';
   }
 
