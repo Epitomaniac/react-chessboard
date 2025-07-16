@@ -85,7 +85,7 @@ export const AnalysisBoard: Story = {
     // set the chessboard options, using arrows to show the best move
     const chessboardOptions = {
       arrows: arrow,
-      position: chessPosition,
+      positionFen: chessPosition,
       onPieceDrop,
     };
 

@@ -10,6 +10,7 @@ import {
 
 type PieceProps = {
   clone?: boolean;
+  isMovable?: boolean;
   isSparePiece?: DraggingPieceDataType['isSparePiece'];
   position: DraggingPieceDataType['position'];
   pieceType: PieceDataType['pieceType'];
@@ -17,6 +18,7 @@ type PieceProps = {
 
 export const Piece = memo(function Piece({
   clone,
+  isMovable,
   isSparePiece = false,
   position,
   pieceType,
@@ -26,7 +28,6 @@ export const Piece = memo(function Piece({
     allowDragging,
     animationDuration,
     boardOrientation,
-    canDragPiece,
     draggingPiece,
     draggingPieceStyle,
     draggingPieceGhostStyle,
@@ -38,12 +39,9 @@ export const Piece = memo(function Piece({
   const [animationStyle, setAnimationStyle] = useState<React.CSSProperties>({});
 
   let cursorStyle = clone ? 'grabbing' : 'grab';
-  if (
-    !allowDragging ||
-    (canDragPiece &&
-      !canDragPiece({ piece: { pieceType }, isSparePiece, square: position }))
-  ) {
-    cursorStyle = 'pointer';
+
+  if (!allowDragging || !isMovable) {
+    cursorStyle = 'default';
   }
 
   useEffect(() => {

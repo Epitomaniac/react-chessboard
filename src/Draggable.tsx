@@ -16,7 +16,7 @@ export function Draggable({
   pieceType,
   position,
 }: DraggableProps) {
-  const { allowDragging, canDragPiece } = useChessboardContext();
+  const { allowDragging } = useChessboardContext();
 
   const { setNodeRef, attributes, listeners } = useDraggable({
     id: position,
@@ -24,14 +24,7 @@ export function Draggable({
       isSparePiece,
       pieceType,
     },
-    disabled:
-      !allowDragging ||
-      (canDragPiece &&
-        !canDragPiece({
-          piece: { pieceType },
-          isSparePiece,
-          square: position,
-        })),
+    disabled: !allowDragging,
   });
 
   return (

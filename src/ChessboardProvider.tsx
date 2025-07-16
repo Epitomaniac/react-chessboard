@@ -59,7 +59,7 @@ type Defined<T> = T extends undefined ? never : T;
 type ContextType = {
   // id
   id: Defined<ChessboardOptions['id']>;
-  position: Defined<ChessboardOptions['position']>;
+  positionFen: Defined<ChessboardOptions['positionFen']>;
 
   // chessboard options
   pieces: Defined<ChessboardOptions['pieces']>;
@@ -100,7 +100,6 @@ type ContextType = {
   highlights: Defined<ChessboardOptions['highlights']>;
   highlightOptions: Defined<ChessboardOptions['highlightOptions']>;
 
-  canDragPiece: ChessboardOptions['canDragPiece'];
   onMouseOverSquare: ChessboardOptions['onMouseOverSquare'];
   onPieceClick: ChessboardOptions['onPieceClick'];
   onSquareClick: ChessboardOptions['onSquareClick'];
@@ -140,7 +139,7 @@ export type ChessboardOptions = {
 
   // pieces and position
   pieces?: PieceRenderObject;
-  position?: string;
+  positionFen?: string;
   promotionDialog?: { type: string; promotionSquare: string };
 
   // board dimensions and orientation
@@ -183,7 +182,6 @@ export type ChessboardOptions = {
   highlightOptions?: typeof defaultHighlightOptions;
 
   // handlers
-  canDragPiece?: ({ isSparePiece, piece, square }: PieceHandlerArgs) => boolean;
   onArrowsChange?: (arrows: Arrow[]) => void;
   onMouseOverSquare?: ({ piece, square }: SquareHandlerArgs) => void;
   onPieceClick?: ({ isSparePiece, piece, square }: PieceHandlerArgs) => void;
@@ -217,7 +215,7 @@ export function ChessboardProvider({
 
     // pieces and position
     pieces = defaultPieces,
-    position = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR',
+    positionFen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
     promotionDialog = { type: 'none', promotionSquare: 'none' },
 
     // board dimensions and orientation
@@ -259,7 +257,6 @@ export function ChessboardProvider({
     highlightOptions = defaultHighlightOptions,
 
     // handlers
-    canDragPiece,
     onArrowsChange,
     onMouseOverSquare,
     onPieceClick,
@@ -277,9 +274,9 @@ export function ChessboardProvider({
 
   // the current position of pieces on the chessboard
   const [currentPosition, setCurrentPosition] = useState(
-    typeof position === 'string'
-      ? fenStringToPositionObject(position)
-      : position,
+    typeof positionFen === 'string'
+      ? fenStringToPositionObject(positionFen)
+      : positionFen,
   );
 
   // calculated differences between current and incoming positions
@@ -317,9 +314,9 @@ export function ChessboardProvider({
   useEffect(() => {
     clearArrows();
     const newPosition =
-      typeof position === 'string'
-        ? fenStringToPositionObject(position)
-        : position;
+      typeof positionFen === 'string'
+        ? fenStringToPositionObject(positionFen)
+        : positionFen;
 
     // if no animation, just set the position
     if (!showAnimations) {
@@ -402,14 +399,14 @@ export function ChessboardProvider({
         clearTimeout(animationTimeoutRef.current);
       }
     };
-  }, [position]);
+  }, [positionFen]);
 
   // if the dimensions change, we need to recreate the pieces array
   useEffect(() => {
     setCurrentPosition(
-      typeof position === 'string'
-        ? fenStringToPositionObject(position)
-        : position,
+      typeof positionFen === 'string'
+        ? fenStringToPositionObject(positionFen)
+        : positionFen,
     );
   }, [boardOrientation]);
 
@@ -671,7 +668,7 @@ export function ChessboardProvider({
       value={{
         // chessboard options
         id,
-        position,
+        positionFen,
 
         pieces,
         promotionDialog,
@@ -706,7 +703,6 @@ export function ChessboardProvider({
         highlights,
         highlightOptions,
 
-        canDragPiece,
         onMouseOverSquare,
         onPieceClick,
         onSquareClick,

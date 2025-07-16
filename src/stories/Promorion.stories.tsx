@@ -90,7 +90,7 @@ export const Promotion: Story = {
     const chessboardOptions = {
       id: 'promotion',
       animationDuration,
-      position: chessPosition,
+      positionFen: chessPosition,
       onPieceDrop: makeMove,
       onPromotionPieceSelect: handlePromotionPieceSelect,
       promotionDialog,
