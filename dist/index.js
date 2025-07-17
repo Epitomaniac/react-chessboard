@@ -5119,7 +5119,7 @@ const defaultNumericNotationStyle = {
     userSelect: 'none',
 };
 const defaultDraggingPieceStyle = {
-    transform: 'scale(1.2)',
+    transform: 'scale(1.1)',
 };
 const defaultDraggingPieceGhostStyle = {
     opacity: 0.5,
@@ -5415,7 +5415,7 @@ function ChessboardProvider({ children, options, }) {
         activationConstraint: {
             distance: dragActivationDistance,
         },
-    }), useSensor(KeyboardSensor), useSensor(TouchSensor), useSensor(MouseSensor));
+    }), useSensor(KeyboardSensor), useSensor(TouchSensor));
     // collision detection that first tries pointer-based detection and then falls back to rectangle intersection for keyboards
     function collisionDetection(args) {
         // first try pointer-based collision detection
@@ -5708,7 +5708,9 @@ const Square = React.memo(function Square({ children, hasMovablePiece, squareId,
                 setNewArrowStartSquare(squareId);
             }
         }, onMouseUp: (e) => {
-            if (e.button === 0 && !hasMovablePiece) {
+            if (e.button === 0 &&
+                !hasMovablePiece &&
+                Object.keys(squareStyles).length === 0) {
                 clearArrows();
             }
             if (e.button === 2) {
@@ -5745,10 +5747,7 @@ const Square = React.memo(function Square({ children, hasMovablePiece, squareId,
                     : {
                         ...defaultDarkSquareNotationStyle,
                         ...darkSquareNotationStyle,
-                    }, children: [row === (boardOrientation === 'white' ? '1' : '8') && (jsxRuntimeExports.jsx("span", { style: { ...defaultAlphaNotationStyle, ...alphaNotationStyle }, children: column })), column ===
-                        (boardOrientation === 'white'
-                            ? 'h'
-                            : columnIndexToChessColumn(0, boardOrientation)) && (jsxRuntimeExports.jsx("span", { style: {
+                    }, children: [row === (boardOrientation === 'white' ? '1' : '8') && (jsxRuntimeExports.jsx("span", { style: { ...defaultAlphaNotationStyle, ...alphaNotationStyle }, children: column })), column === (boardOrientation === 'white' ? 'h' : 'a') && (jsxRuntimeExports.jsx("span", { style: {
                             ...defaultNumericNotationStyle,
                             ...numericNotationStyle,
                         }, children: row }))] })) : null, squareRenderer?.({

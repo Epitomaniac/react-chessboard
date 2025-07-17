@@ -13,7 +13,6 @@ export const PieceDragging: Story = {
   render: () => {
     const chessboardOptions = {
       id: 'dragging-piece',
-      sideToMove: 'b',
     };
 
     return (

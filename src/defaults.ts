@@ -55,7 +55,7 @@ export const defaultNumericNotationStyle: React.CSSProperties = {
 };
 
 export const defaultDraggingPieceStyle: React.CSSProperties = {
-  transform: 'scale(1.2)',
+  transform: 'scale(1.1)',
 };
 
 export const defaultDraggingPieceGhostStyle: React.CSSProperties = {

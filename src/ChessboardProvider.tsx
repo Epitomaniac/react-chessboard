@@ -3,7 +3,6 @@ import {
   DragEndEvent,
   DragStartEvent,
   KeyboardSensor,
-  MouseSensor,
   PointerSensor,
   pointerWithin,
   TouchSensor,
@@ -649,7 +648,6 @@ export function ChessboardProvider({
     }),
     useSensor(KeyboardSensor),
     useSensor(TouchSensor),
-    useSensor(MouseSensor),
   );
 
   // collision detection that first tries pointer-based detection and then falls back to rectangle intersection for keyboards
