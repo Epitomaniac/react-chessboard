@@ -143,10 +143,7 @@ export const Square = memo(function Square({
               {column}
             </span>
           )}
-          {column ===
-            (boardOrientation === 'white'
-              ? 'h'
-              : columnIndexToChessColumn(0, boardOrientation)) && (
+          {column === (boardOrientation === 'white' ? 'h' : 'a') && (
             <span
               style={{
                 ...defaultNumericNotationStyle,
