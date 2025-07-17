@@ -11,7 +11,6 @@ import {
   defaultSquareStyle,
 } from './defaults';
 import { SquareDataType } from './types';
-import { columnIndexToChessColumn } from './utils';
 
 type SquareProps = {
   children?: React.ReactNode;
@@ -89,7 +88,11 @@ export const Square = memo(function Square({
         }
       }}
       onMouseUp={(e) => {
-        if (e.button === 0 && !hasMovablePiece) {
+        if (
+          e.button === 0 &&
+          !hasMovablePiece &&
+          Object.keys(squareStyles).length === 0
+        ) {
           clearArrows();
         }
         if (e.button === 2) {
