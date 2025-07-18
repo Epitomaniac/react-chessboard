@@ -5783,7 +5783,7 @@ function PromotionDialog({ boardWidth }) {
     }, [visible]);
     if (!boardWidth || !visible || promotionDialog.type === 'none')
         return null;
-    const promotePieceColor = positionFen.split(' ')[1];
+    const promotePieceColor = positionFen.split(' ')[1] ?? 'w';
     const promotionOptions = [
         `${promotePieceColor}Q`,
         `${promotePieceColor}R`,
@@ -5877,7 +5877,7 @@ function Board() {
     const [boardWidth, setBoardWidth] = useState(boardRef.current?.clientWidth);
     const [boardHeight, setBoardHeight] = useState(boardRef.current?.clientHeight);
     // determine which side has the move; this is used to determined whether the rendered piece is legal to move
-    const playerSide = sideToMove ?? positionFen.split(' ')[1];
+    const playerSide = sideToMove ?? positionFen.split(' ')[1] ?? 'w';
     // if the board dimensions change, update the board width and height
     useEffect(() => {
         if (boardRef.current) {

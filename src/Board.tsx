@@ -28,7 +28,7 @@ export function Board() {
     boardRef.current?.clientHeight,
   );
   // determine which side has the move; this is used to determined whether the rendered piece is legal to move
-  const playerSide = sideToMove ?? positionFen.split(' ')[1];
+  const playerSide = sideToMove ?? positionFen.split(' ')[1] ?? 'w';
 
   // if the board dimensions change, update the board width and height
   useEffect(() => {
