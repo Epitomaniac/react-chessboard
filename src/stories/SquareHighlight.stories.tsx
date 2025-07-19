@@ -25,7 +25,6 @@ export const SquareHighlight: Story = {
     };
 
     const chessboardOptions = {
-      sideToMove: 'both',
       highlights,
       onSquareRightClick: handleSquareRightClick,
     };
