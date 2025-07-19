@@ -41,7 +41,9 @@ export function PromotionDialog({ boardWidth }: Props) {
 
   if (!boardWidth || !visible || promotionDialog.type === 'none') return null;
 
-  const promotePieceColor = positionFen.split(' ')[1] ?? 'w';
+  const promotePieceColor =
+    (typeof positionFen === 'string' ? positionFen.split(' ')[1] : undefined) ??
+    'w';
 
   const promotionOptions = [
     `${promotePieceColor}Q`,

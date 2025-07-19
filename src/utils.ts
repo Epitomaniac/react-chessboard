@@ -52,7 +52,7 @@ export function chessRowToRowIndex(
 export function fenStringToPositionObject(fen: string) {
   const positionObject: PositionDataType = {};
 
-  const rows = fen.split(' ')[0].split('/');
+  const rows = fen.split(' ')?.[0]?.split('/');
 
   // rows start from top of the board (black rank) in white orientation, and bottom of the board (white rank) in black orientation
   for (let row = 0; row < rows.length; row++) {
@@ -129,7 +129,7 @@ export function getPositionUpdates(
 
     if (candidateSquares.length === 1) {
       // if there is only one candidate, we can just return it
-      updates[candidateSquares[0]] = newSquare;
+      updates[candidateSquares?.[0]] = newSquare;
     } else {
       // if there are multiple candidates, we need to find the one that is correct to the best of our ability by standard chess rules
       for (const candidateSquare of candidateSquares) {

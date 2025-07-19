@@ -4729,7 +4729,7 @@ function chessRowToRowIndex(row, boardOrientation) {
 }
 function fenStringToPositionObject(fen) {
     const positionObject = {};
-    const rows = fen.split(' ')[0].split('/');
+    const rows = fen.split(' ')?.[0]?.split('/');
     // rows start from top of the board (black rank) in white orientation, and bottom of the board (white rank) in black orientation
     for (let row = 0; row < rows.length; row++) {
         let column = 0;
@@ -4787,7 +4787,7 @@ function getPositionUpdates(oldPosition, newPosition, boardOrientation) {
         }
         if (candidateSquares.length === 1) {
             // if there is only one candidate, we can just return it
-            updates[candidateSquares[0]] = newSquare;
+            updates[candidateSquares?.[0]] = newSquare;
         }
         else {
             // if there are multiple candidates, we need to find the one that is correct to the best of our ability by standard chess rules
@@ -5783,7 +5783,8 @@ function PromotionDialog({ boardWidth }) {
     }, [visible]);
     if (!boardWidth || !visible || promotionDialog.type === 'none')
         return null;
-    const promotePieceColor = positionFen.split(' ')[1] ?? 'w';
+    const promotePieceColor = (typeof positionFen === 'string' ? positionFen.split(' ')[1] : undefined) ??
+        'w';
     const promotionOptions = [
         `${promotePieceColor}Q`,
         `${promotePieceColor}R`,
@@ -5877,7 +5878,9 @@ function Board() {
     const [boardWidth, setBoardWidth] = useState(boardRef.current?.clientWidth);
     const [boardHeight, setBoardHeight] = useState(boardRef.current?.clientHeight);
     // determine which side has the move; this is used to determined whether the rendered piece is legal to move
-    const playerSide = sideToMove ?? positionFen.split(' ')[1] ?? 'w';
+    const playerSide = sideToMove ??
+        (typeof positionFen === 'string' ? positionFen.split(' ')[1] : undefined) ??
+        'w';
     // if the board dimensions change, update the board width and height
     useEffect(() => {
         if (boardRef.current) {
