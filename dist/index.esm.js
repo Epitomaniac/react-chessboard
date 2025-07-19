@@ -5681,7 +5681,7 @@ const Piece = memo(function Piece({ clone, isMovable, isSparePiece = false, posi
         }, onClick: () => onPieceClick?.({ isSparePiece, piece: { pieceType }, square: position }), children: jsxRuntimeExports.jsx(PieceSvg, {}) }));
 });
 
-const Square = memo(function Square({ children, hasMovablePiece, squareId, isLightSquare, isOver, }) {
+const Square = memo(function Square({ children, hasMovablePiece, squareId, isDialogOpen, isLightSquare, isOver, }) {
     const { id, allowDrawingArrows, boardOrientation, currentPosition, squareStyle, squareStyles, darkSquareStyle, lightSquareStyle, dropSquareStyle, darkSquareNotationStyle, lightSquareNotationStyle, alphaNotationStyle, numericNotationStyle, showNotation, onMouseOverSquare, onSquareClick, onSquareRightClick, squareRenderer, newArrowStartSquare, newArrowOverSquare, clearArrows, setNewArrowStartSquare, setNewArrowOverSquare, drawArrow, } = useChessboardContext();
     const column = squareId.match(/^[a-z]+/)?.[0];
     const row = squareId.match(/\d+$/)?.[0];
@@ -5708,6 +5708,7 @@ const Square = memo(function Square({ children, hasMovablePiece, squareId, isLig
         }, onMouseUp: (e) => {
             if (e.button === 0 &&
                 !hasMovablePiece &&
+                !isDialogOpen &&
                 Object.keys(squareStyles).length === 0) {
                 clearArrows();
             }
@@ -5759,11 +5760,10 @@ const Square = memo(function Square({ children, hasMovablePiece, squareId, isLig
                 }, children: children }))] }));
 });
 
-function PromotionDialog({ boardWidth }) {
+function PromotionDialog({ boardWidth, visible, setVisible }) {
     const { boardOrientation, positionFen, promotionDialog, pieces, onPromotionPieceSelect, } = useChessboardContext();
     const dialogRef = useRef(null);
     const [isHover, setIsHover] = useState(undefined);
-    const [visible, setVisible] = useState(false);
     useEffect(() => {
         if (promotionDialog.type !== 'none')
             setVisible(true);
@@ -5771,15 +5771,15 @@ function PromotionDialog({ boardWidth }) {
     useEffect(() => {
         if (!visible)
             return; // nothing to do if hidden
-        const handlePointerDown = (e) => {
+        const handlePointerUp = (e) => {
             if (dialogRef.current && !dialogRef.current.contains(e.target)) {
                 e.stopPropagation(); // don’t let the click move a piece
                 setVisible(false); // hide locally
             }
         };
         // capture phase so we run before board’s own handlers
-        document.addEventListener('pointerdown', handlePointerDown, true);
-        return () => document.removeEventListener('pointerdown', handlePointerDown, true);
+        document.addEventListener('pointerup', handlePointerUp, true);
+        return () => document.removeEventListener('pointerup', handlePointerUp, true);
     }, [visible]);
     if (!boardWidth || !visible || promotionDialog.type === 'none')
         return null;
@@ -5802,7 +5802,7 @@ function PromotionDialog({ boardWidth }) {
             top: '50%',
             left: '50%',
             transform: 'translate(-50%, -50%)',
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            backgroundColor: 'rgba(0, 0, 0, 0.3)',
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
@@ -5850,26 +5850,28 @@ function PromotionDialog({ boardWidth }) {
                 }, children: jsxRuntimeExports.jsx("svg", { viewBox: "1 1 43 43", width: boardWidth / 8, height: boardWidth / 8, style: {
                         transition: 'transform 0.15s ease-in-out',
                         transform: isHover === option ? 'scale(1)' : 'scale(0.9)',
-                    }, children: jsxRuntimeExports.jsx("g", { children: jsxRuntimeExports.jsx(Piece, { option: option }) }) }) }, option))) }) })) : promotionDialog.type === 'vertical' ? (jsxRuntimeExports.jsx("div", { ref: dialogRef, style: {
-            position: 'absolute',
-            top: isBottomRank ? undefined : `${dialogCoords?.y}px`,
-            bottom: isBottomRank ? `${boardWidth - dialogCoords?.y}px` : undefined,
-            left: `${dialogCoords?.x}px`,
-            zIndex: 1000,
-            width: boardWidth / 8,
-            height: boardWidth / 2,
-            boxSizing: 'border-box',
-            border: '1px solid gray',
-            ...dialogStyles.vertical,
-        }, title: "Choose promotion piece", children: orderedPromotionOptions.map((option) => (jsxRuntimeExports.jsx("div", { onClick: () => onPromotionPieceSelect?.(option), onMouseOver: () => setIsHover(option), onMouseOut: () => setIsHover(undefined), style: {
-                cursor: 'pointer',
-                backgroundColor: isHover === option ? 'orange' : '#cabfa6ff',
-                transition: 'all 0.1s ease-out',
-            }, children: jsxRuntimeExports.jsx("svg", { viewBox: "1 1 43 43", width: boardWidth / 8, height: boardWidth / 8, style: {
-                    display: 'block',
+                    }, children: jsxRuntimeExports.jsx("g", { children: jsxRuntimeExports.jsx(Piece, { option: option }) }) }) }, option))) }) })) : promotionDialog.type === 'vertical' ? (jsxRuntimeExports.jsx("div", { style: dialogStyles.modal, children: jsxRuntimeExports.jsx("div", { ref: dialogRef, style: {
+                position: 'absolute',
+                top: isBottomRank ? undefined : `${dialogCoords?.y}px`,
+                bottom: isBottomRank
+                    ? `${boardWidth - dialogCoords?.y}px`
+                    : undefined,
+                left: `${dialogCoords?.x}px`,
+                zIndex: 1000,
+                width: boardWidth / 8,
+                height: boardWidth / 2,
+                boxSizing: 'border-box',
+                border: '1px solid gray',
+                ...dialogStyles.vertical,
+            }, title: "Choose promotion piece", children: orderedPromotionOptions.map((option) => (jsxRuntimeExports.jsx("div", { onClick: () => onPromotionPieceSelect?.(option), onMouseOver: () => setIsHover(option), onMouseOut: () => setIsHover(undefined), style: {
+                    cursor: 'pointer',
+                    backgroundColor: isHover === option ? 'orange' : '#cabfa6ff',
                     transition: 'all 0.1s ease-out',
-                    transform: isHover === option ? 'scale(1)' : 'scale(0.85)',
-                }, children: jsxRuntimeExports.jsx("g", { children: jsxRuntimeExports.jsx(Piece, { option: option }) }) }) }, option))) })) : null;
+                }, children: jsxRuntimeExports.jsx("svg", { viewBox: "1 1 43 43", width: boardWidth / 8, height: boardWidth / 8, style: {
+                        display: 'block',
+                        transition: 'all 0.1s ease-out',
+                        transform: isHover === option ? 'scale(1)' : 'scale(0.85)',
+                    }, children: jsxRuntimeExports.jsx("g", { children: jsxRuntimeExports.jsx(Piece, { option: option }) }) }) }, option))) }) })) : null;
 }
 
 function Board() {
@@ -5877,6 +5879,9 @@ function Board() {
     const boardRef = useRef(null);
     const [boardWidth, setBoardWidth] = useState(boardRef.current?.clientWidth);
     const [boardHeight, setBoardHeight] = useState(boardRef.current?.clientHeight);
+    // the state that controls whether promotion dialog is open; it sits on the
+    // parent component and is used by the square component in deciding to clear arrows
+    const [visible, setVisible] = useState(false);
     // determine which side has the move; this is used to determined whether the rendered piece is legal to move
     const playerSide = sideToMove ??
         (typeof positionFen === 'string' ? positionFen.split(' ')[1] : undefined) ??
@@ -5896,8 +5901,12 @@ function Board() {
     }, [boardRef.current]);
     return (jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [jsxRuntimeExports.jsxs("div", { id: `${id}-board`, ref: boardRef, style: { ...defaultBoardStyle(), ...boardStyle }, children: [board.map((row) => row.map((square) => {
                         const piece = currentPosition[square.squareId];
-                        return (jsxRuntimeExports.jsx(Droppable, { squareId: square.squareId, children: ({ isOver }) => (jsxRuntimeExports.jsx(Square, { isOver: isOver, ...square, hasMovablePiece: !!piece && piece.pieceType[0].toLowerCase() === playerSide, children: piece ? (jsxRuntimeExports.jsx(Draggable, { isMovable: piece.pieceType[0].toLowerCase() === playerSide, isSparePiece: false, position: square.squareId, pieceType: piece.pieceType, children: jsxRuntimeExports.jsx(Piece, { ...piece, position: square.squareId, isMovable: piece.pieceType[0].toLowerCase() === playerSide }) })) : null })) }, square.squareId));
-                    })), jsxRuntimeExports.jsx(Arrows, { boardWidth: boardWidth, boardHeight: boardHeight }), jsxRuntimeExports.jsx(Highlights, { boardWidth: boardWidth, boardHeight: boardHeight }), jsxRuntimeExports.jsx(PromotionDialog, { boardWidth: boardWidth })] }), jsxRuntimeExports.jsx(DragOverlay, { dropAnimation: null, modifiers: [snapCenterToCursor], children: draggingPiece ? (jsxRuntimeExports.jsx(Piece, { clone: true, position: draggingPiece.position, pieceType: draggingPiece.pieceType })) : null })] }));
+                        return (jsxRuntimeExports.jsx(Droppable, { squareId: square.squareId, children: ({ isOver }) => (jsxRuntimeExports.jsx(Square, { isOver: isOver, isDialogOpen: visible, ...square, hasMovablePiece: !!piece && piece.pieceType[0].toLowerCase() === playerSide, children: piece ? (jsxRuntimeExports.jsx(Draggable, { isMovable: sideToMove === 'both'
+                                        ? true
+                                        : piece.pieceType[0].toLowerCase() === playerSide, isSparePiece: false, position: square.squareId, pieceType: piece.pieceType, children: jsxRuntimeExports.jsx(Piece, { ...piece, position: square.squareId, isMovable: sideToMove === 'both'
+                                            ? true
+                                            : piece.pieceType[0].toLowerCase() === playerSide }) })) : null })) }, square.squareId));
+                    })), jsxRuntimeExports.jsx(Arrows, { boardWidth: boardWidth, boardHeight: boardHeight }), jsxRuntimeExports.jsx(Highlights, { boardWidth: boardWidth, boardHeight: boardHeight }), jsxRuntimeExports.jsx(PromotionDialog, { boardWidth: boardWidth, visible: visible, setVisible: setVisible })] }), jsxRuntimeExports.jsx(DragOverlay, { dropAnimation: null, modifiers: [snapCenterToCursor], children: draggingPiece ? (jsxRuntimeExports.jsx(Piece, { clone: true, position: draggingPiece.position, pieceType: draggingPiece.pieceType })) : null })] }));
 }
 
 function Chessboard({ options }) {
