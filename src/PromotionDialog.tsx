@@ -4,9 +4,11 @@ import { getRelativeCoords } from './utils';
 
 type Props = {
   boardWidth: number | undefined;
+  visible: boolean;
+  setVisible: Function;
 };
 
-export function PromotionDialog({ boardWidth }: Props) {
+export function PromotionDialog({ boardWidth, visible, setVisible }: Props) {
   const {
     boardOrientation,
     positionFen,
@@ -17,7 +19,6 @@ export function PromotionDialog({ boardWidth }: Props) {
 
   const dialogRef = useRef<HTMLDivElement>(null);
   const [isHover, setIsHover] = useState<string | undefined>(undefined);
-  const [visible, setVisible] = useState<boolean>(false);
 
   useEffect(() => {
     if (promotionDialog.type !== 'none') setVisible(true);
@@ -26,7 +27,7 @@ export function PromotionDialog({ boardWidth }: Props) {
   useEffect(() => {
     if (!visible) return; // nothing to do if hidden
 
-    const handlePointerDown = (e: PointerEvent) => {
+    const handlePointerUp = (e: PointerEvent) => {
       if (dialogRef.current && !dialogRef.current.contains(e.target as Node)) {
         e.stopPropagation(); // don’t let the click move a piece
         setVisible(false); // hide locally
@@ -34,9 +35,9 @@ export function PromotionDialog({ boardWidth }: Props) {
     };
 
     // capture phase so we run before board’s own handlers
-    document.addEventListener('pointerdown', handlePointerDown, true);
+    document.addEventListener('pointerup', handlePointerUp, true);
     return () =>
-      document.removeEventListener('pointerdown', handlePointerDown, true);
+      document.removeEventListener('pointerup', handlePointerUp, true);
   }, [visible]);
 
   if (!boardWidth || !visible || promotionDialog.type === 'none') return null;
@@ -68,7 +69,7 @@ export function PromotionDialog({ boardWidth }: Props) {
       top: '50%',
       left: '50%',
       transform: 'translate(-50%, -50%)',
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      backgroundColor: 'rgba(0, 0, 0, 0.3)',
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
@@ -155,50 +156,54 @@ export function PromotionDialog({ boardWidth }: Props) {
       </div>
     </div>
   ) : promotionDialog.type === 'vertical' ? (
-    <div
-      ref={dialogRef}
-      style={{
-        position: 'absolute',
-        top: isBottomRank ? undefined : `${dialogCoords?.y}px`,
-        bottom: isBottomRank ? `${boardWidth - dialogCoords?.y}px` : undefined,
-        left: `${dialogCoords?.x}px`,
-        zIndex: 1000,
-        width: boardWidth / 8,
-        height: boardWidth / 2,
-        boxSizing: 'border-box',
-        border: '1px solid gray',
-        ...dialogStyles.vertical,
-      }}
-      title="Choose promotion piece"
-    >
-      {orderedPromotionOptions.map((option) => (
-        <div
-          key={option}
-          onClick={() => onPromotionPieceSelect?.(option)}
-          onMouseOver={() => setIsHover(option)}
-          onMouseOut={() => setIsHover(undefined)}
-          style={{
-            cursor: 'pointer',
-            backgroundColor: isHover === option ? 'orange' : '#cabfa6ff',
-            transition: 'all 0.1s ease-out',
-          }}
-        >
-          <svg
-            viewBox="1 1 43 43"
-            width={boardWidth / 8}
-            height={boardWidth / 8}
+    <div style={dialogStyles.modal}>
+      <div
+        ref={dialogRef}
+        style={{
+          position: 'absolute',
+          top: isBottomRank ? undefined : `${dialogCoords?.y}px`,
+          bottom: isBottomRank
+            ? `${boardWidth - dialogCoords?.y}px`
+            : undefined,
+          left: `${dialogCoords?.x}px`,
+          zIndex: 1000,
+          width: boardWidth / 8,
+          height: boardWidth / 2,
+          boxSizing: 'border-box',
+          border: '1px solid gray',
+          ...dialogStyles.vertical,
+        }}
+        title="Choose promotion piece"
+      >
+        {orderedPromotionOptions.map((option) => (
+          <div
+            key={option}
+            onClick={() => onPromotionPieceSelect?.(option)}
+            onMouseOver={() => setIsHover(option)}
+            onMouseOut={() => setIsHover(undefined)}
             style={{
-              display: 'block',
+              cursor: 'pointer',
+              backgroundColor: isHover === option ? 'orange' : '#cabfa6ff',
               transition: 'all 0.1s ease-out',
-              transform: isHover === option ? 'scale(1)' : 'scale(0.85)',
             }}
           >
-            <g>
-              <Piece option={option} />
-            </g>
-          </svg>
-        </div>
-      ))}
+            <svg
+              viewBox="1 1 43 43"
+              width={boardWidth / 8}
+              height={boardWidth / 8}
+              style={{
+                display: 'block',
+                transition: 'all 0.1s ease-out',
+                transform: isHover === option ? 'scale(1)' : 'scale(0.85)',
+              }}
+            >
+              <g>
+                <Piece option={option} />
+              </g>
+            </svg>
+          </div>
+        ))}
+      </div>
     </div>
   ) : null;
 }

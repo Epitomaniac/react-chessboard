@@ -15,6 +15,7 @@ import { SquareDataType } from './types';
 type SquareProps = {
   children?: React.ReactNode;
   hasMovablePiece?: boolean;
+  isDialogOpen: boolean;
   squareId: SquareDataType['squareId'];
   isLightSquare: SquareDataType['isLightSquare'];
   isOver: boolean;
@@ -24,6 +25,7 @@ export const Square = memo(function Square({
   children,
   hasMovablePiece,
   squareId,
+  isDialogOpen,
   isLightSquare,
   isOver,
 }: SquareProps) {
@@ -91,6 +93,7 @@ export const Square = memo(function Square({
         if (
           e.button === 0 &&
           !hasMovablePiece &&
+          !isDialogOpen &&
           Object.keys(squareStyles).length === 0
         ) {
           clearArrows();

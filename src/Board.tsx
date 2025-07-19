@@ -27,6 +27,9 @@ export function Board() {
   const [boardHeight, setBoardHeight] = useState(
     boardRef.current?.clientHeight,
   );
+  // the state that controls whether promotion dialog is open; it sits on the
+  // parent component and is used by the square component in deciding to clear arrows
+  const [visible, setVisible] = useState<boolean>(false);
   // determine which side has the move; this is used to determined whether the rendered piece is legal to move
   const playerSide =
     sideToMove ??
@@ -64,6 +67,7 @@ export function Board() {
                 {({ isOver }) => (
                   <Square
                     isOver={isOver}
+                    isDialogOpen={visible}
                     {...square}
                     hasMovablePiece={
                       !!piece && piece.pieceType[0].toLowerCase() === playerSide
@@ -72,7 +76,9 @@ export function Board() {
                     {piece ? (
                       <Draggable
                         isMovable={
-                          piece.pieceType[0].toLowerCase() === playerSide
+                          sideToMove === 'both'
+                            ? true
+                            : piece.pieceType[0].toLowerCase() === playerSide
                         }
                         isSparePiece={false}
                         position={square.squareId}
@@ -82,7 +88,9 @@ export function Board() {
                           {...piece}
                           position={square.squareId}
                           isMovable={
-                            piece.pieceType[0].toLowerCase() === playerSide
+                            sideToMove === 'both'
+                              ? true
+                              : piece.pieceType[0].toLowerCase() === playerSide
                           }
                         />
                       </Draggable>
@@ -96,7 +104,11 @@ export function Board() {
 
         <Arrows boardWidth={boardWidth} boardHeight={boardHeight} />
         <Highlights boardWidth={boardWidth} boardHeight={boardHeight} />
-        <PromotionDialog boardWidth={boardWidth} />
+        <PromotionDialog
+          boardWidth={boardWidth}
+          visible={visible}
+          setVisible={setVisible}
+        />
       </div>
 
       <DragOverlay dropAnimation={null} modifiers={[snapCenterToCursor]}>
