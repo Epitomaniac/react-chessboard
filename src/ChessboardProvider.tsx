@@ -140,7 +140,7 @@ export type ChessboardOptions = {
   // pieces and position
   sideToMove?: string | null;
   pieces?: PieceRenderObject;
-  positionFen?: string;
+  positionFen?: string | PositionDataType;
   promotionDialog?: { type: string; promotionSquare: string };
 
   // board dimensions and orientation

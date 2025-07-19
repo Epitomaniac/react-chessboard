@@ -65,7 +65,7 @@ export type ChessboardOptions = {
     id?: string;
     sideToMove?: string | null;
     pieces?: PieceRenderObject;
-    positionFen?: string;
+    positionFen?: string | PositionDataType;
     promotionDialog?: {
         type: string;
         promotionSquare: string;
