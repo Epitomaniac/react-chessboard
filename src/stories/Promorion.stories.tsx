@@ -27,7 +27,6 @@ export const Promotion: Story = {
     );
     const [promotionSource, setPromotionSource] = useState('');
     const [promotionTarget, setPromotionTarget] = useState('');
-    const [animationDuration, setAnimationDuration] = useState(300);
 
     function makeMove({
       piece,
@@ -63,7 +62,6 @@ export const Promotion: Story = {
     }
 
     function handlePromotionPieceSelect(piece: string) {
-      setAnimationDuration(0);
       setPromotionPiece(piece);
       setPromotionDialog({ type: 'none', promotionSquare: 'none' });
     }
@@ -79,17 +77,23 @@ export const Promotion: Story = {
           sourceSquare: promotionSource,
           targetSquare: promotionTarget,
         });
-        setTimeout(() => {
-          setAnimationDuration(300);
-        }, 0);
         setPromotionSource('');
         setPromotionTarget('');
       }
     }, [promotionPiece]);
 
+    function promote() {
+      chessGame.move('c1=Q');
+      setChessPosition(chessGame.fen());
+    }
+
+    function undo() {
+      chessGame.undo();
+      setChessPosition(chessGame.fen());
+    }
+
     const chessboardOptions = {
       id: 'promotion',
-      animationDuration,
       positionFen: chessPosition,
       onPieceDrop: makeMove,
       onPromotionPieceSelect: handlePromotionPieceSelect,
@@ -107,6 +111,10 @@ export const Promotion: Story = {
         }}
       >
         <Chessboard options={chessboardOptions} />
+        <div style={{ display: 'flex', gap: '50px' }}>
+          <button onClick={promote}>Promote</button>{' '}
+          <button onClick={undo}>Undo</button>
+        </div>
       </div>
     );
   },

@@ -326,6 +326,88 @@ export function ChessboardProvider({
       return;
     }
 
+    const isPromotionOrUndo = (() => {
+      const promotionPieces = ['Q', 'R', 'B', 'N']; // Queen, Rook, Bishop, Knight
+
+      // Pawn disappeared, promoted piece appeared = promotion
+      const pawnDisappearedSquares = Object.keys(currentPosition).filter(
+        (sq) => {
+          const oldPiece = currentPosition[sq];
+          const newPiece = newPosition[sq];
+          return oldPiece?.pieceType?.[1] === 'P' && !newPiece;
+        },
+      );
+
+      const promotedAppearedSquares = Object.keys(newPosition).filter((sq) => {
+        const oldPiece = currentPosition[sq];
+        const newPiece = newPosition[sq];
+        return (
+          newPiece &&
+          promotionPieces.includes(newPiece.pieceType[1]) &&
+          (sq[1] === '8' || sq[1] === '1') &&
+          !oldPiece
+        );
+      });
+
+      for (const pawnSquare of pawnDisappearedSquares) {
+        const pawnRank = Number(pawnSquare[1]);
+        for (const promoSquare of promotedAppearedSquares) {
+          const promoRank = Number(promoSquare[1]);
+          if (
+            (pawnRank === 7 && promoRank === 8) || // white promotion
+            (pawnRank === 2 && promoRank === 1) // black promotion
+          ) {
+            return true;
+          }
+        }
+      }
+
+      // Promoted piece disappeared, pawn appeared = promotion undo
+      const promotedDisappearedSquares = Object.keys(currentPosition).filter(
+        (sq) => {
+          const oldPiece = currentPosition[sq];
+          const newPiece = newPosition[sq];
+          return (
+            oldPiece &&
+            promotionPieces.includes(oldPiece.pieceType[1]) &&
+            !newPiece
+          );
+        },
+      );
+
+      const pawnAppearedSquares = Object.keys(newPosition).filter((sq) => {
+        const oldPiece = currentPosition[sq];
+        const newPiece = newPosition[sq];
+        return (
+          newPiece?.pieceType?.[1] === 'P' &&
+          (sq[1] === '7' || sq[1] === '2') &&
+          !oldPiece
+        );
+      });
+
+      for (const promoSquare of promotedDisappearedSquares) {
+        const promoRank = Number(promoSquare[1]);
+        for (const pawnSquare of pawnAppearedSquares) {
+          const pawnRank = Number(pawnSquare[1]);
+          if (
+            (promoRank === 8 && pawnRank === 7) || // white promotion undo
+            (promoRank === 1 && pawnRank === 2) // black promotion undo
+          ) {
+            return true;
+          }
+        }
+      }
+
+      return false;
+    })();
+
+    if (isPromotionOrUndo) {
+      setCurrentPosition(newPosition);
+      setWaitingForAnimationPosition(null);
+      setPositionDifferences({});
+      return;
+    }
+
     // save copy of the waiting for animation position so we can use it later but clear it from state so we don't use it in the next animation
     const currentWaitingForAnimationPosition = waitingForAnimationPosition;
 
