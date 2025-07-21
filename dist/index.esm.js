@@ -5125,7 +5125,7 @@ const defaultDraggingPieceGhostStyle = {
 const defaultArrowOptions = {
     primaryColor: '#ff0000', // color if no modifiers are held down when drawing an arrow
     secondaryColor: '#2f8335', // color if shift is held down when drawing an arrow
-    tertiaryColor: '#fcba03', // color if control is held down when drawing an arrow
+    tertiaryColor: '#0352fc', // color if control is held down when drawing an arrow
     engineColor: '#7500c9ff',
     arrowLengthReducerDenominator: 8, // the lower the denominator, the greater the arrow length reduction (e.g. 8 = 1/8 of a square width removed, 4 = 1/4 of a square width removed)
     sameTargetArrowLengthReducerDenominator: 4, // as above but for arrows targeting the same square (a greater reduction is used to avoid overlaps)
@@ -5137,7 +5137,7 @@ const defaultArrowOptions = {
 const defaultHighlightOptions = {
     primaryColor: '#ff0000', // color if no modifiers are held down when drawing an arrow
     secondaryColor: '#2f8335', // color if shift is held down when drawing an arrow
-    tertiaryColor: '#fcba03', // color if control is held down when drawing an arrow
+    tertiaryColor: '#0352fc', // color if control is held down when drawing an arrow
 };
 
 const ChessboardContext = createContext(null);
@@ -5192,6 +5192,67 @@ function ChessboardProvider({ children, options, }) {
         // if no animation, just set the position
         if (!showAnimations) {
             setCurrentPosition(newPosition);
+            return;
+        }
+        const isPromotionOrUndo = (() => {
+            const promotionPieces = ['Q', 'R', 'B', 'N']; // Queen, Rook, Bishop, Knight
+            // Pawn disappeared, promoted piece appeared = promotion
+            const pawnDisappearedSquares = Object.keys(currentPosition).filter((sq) => {
+                const oldPiece = currentPosition[sq];
+                const newPiece = newPosition[sq];
+                return oldPiece?.pieceType?.[1] === 'P' && !newPiece;
+            });
+            const promotedAppearedSquares = Object.keys(newPosition).filter((sq) => {
+                const oldPiece = currentPosition[sq];
+                const newPiece = newPosition[sq];
+                return (newPiece &&
+                    promotionPieces.includes(newPiece.pieceType[1]) &&
+                    (sq[1] === '8' || sq[1] === '1') &&
+                    !oldPiece);
+            });
+            for (const pawnSquare of pawnDisappearedSquares) {
+                const pawnRank = Number(pawnSquare[1]);
+                for (const promoSquare of promotedAppearedSquares) {
+                    const promoRank = Number(promoSquare[1]);
+                    if ((pawnRank === 7 && promoRank === 8) || // white promotion
+                        (pawnRank === 2 && promoRank === 1) // black promotion
+                    ) {
+                        return true;
+                    }
+                }
+            }
+            // Promoted piece disappeared, pawn appeared = promotion undo
+            const promotedDisappearedSquares = Object.keys(currentPosition).filter((sq) => {
+                const oldPiece = currentPosition[sq];
+                const newPiece = newPosition[sq];
+                return (oldPiece &&
+                    promotionPieces.includes(oldPiece.pieceType[1]) &&
+                    !newPiece);
+            });
+            const pawnAppearedSquares = Object.keys(newPosition).filter((sq) => {
+                const oldPiece = currentPosition[sq];
+                const newPiece = newPosition[sq];
+                return (newPiece?.pieceType?.[1] === 'P' &&
+                    (sq[1] === '7' || sq[1] === '2') &&
+                    !oldPiece);
+            });
+            for (const promoSquare of promotedDisappearedSquares) {
+                const promoRank = Number(promoSquare[1]);
+                for (const pawnSquare of pawnAppearedSquares) {
+                    const pawnRank = Number(pawnSquare[1]);
+                    if ((promoRank === 8 && pawnRank === 7) || // white promotion undo
+                        (promoRank === 1 && pawnRank === 2) // black promotion undo
+                    ) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        })();
+        if (isPromotionOrUndo) {
+            setCurrentPosition(newPosition);
+            setWaitingForAnimationPosition(null);
+            setPositionDifferences({});
             return;
         }
         // save copy of the waiting for animation position so we can use it later but clear it from state so we don't use it in the next animation
@@ -5262,7 +5323,15 @@ function ChessboardProvider({ children, options, }) {
     const board = useMemo(() => generateBoard(boardOrientation), [boardOrientation]);
     // acts as an event listener for the chessboard's arrows prop
     useEffect(() => {
-        if (JSON.stringify(externalArrows) !== JSON.stringify(arrows)) {
+        const isValidArrow = (item) => {
+            return (typeof item === 'object' &&
+                item !== null &&
+                typeof item.startSquare === 'string' &&
+                typeof item.endSquare === 'string' &&
+                ['primary', 'secondary', 'tertiary', 'engine'].includes(item.color));
+        };
+        if (arrows.every(isValidArrow) &&
+            JSON.stringify(externalArrows) !== JSON.stringify(arrows)) {
             setExternalArrows(arrows);
         }
     }, [arrows]);
@@ -5573,6 +5642,13 @@ function Arrows({ boardWidth, boardHeight }) {
 
 function Highlights({ boardWidth, boardHeight }) {
     const { id, highlights, highlightOptions, boardOrientation } = useChessboardContext();
+    const isValidHighlight = (item) => {
+        return (typeof item === 'object' &&
+            typeof item.square === 'string' &&
+            ['primary', 'secondary', 'tertiary', 'engine'].includes(item.color));
+    };
+    if (!Array.isArray(highlights) || !highlights.every(isValidHighlight))
+        return;
     if (!boardWidth || !boardHeight)
         return null;
     const squareSize = boardWidth / 8;
@@ -5707,6 +5783,7 @@ const Square = memo(function Square({ children, hasMovablePiece, squareId, isDia
             }
         }, onMouseUp: (e) => {
             if (e.button === 0 &&
+                allowDrawingArrows &&
                 !hasMovablePiece &&
                 !isDialogOpen &&
                 Object.keys(squareStyles).length === 0) {
