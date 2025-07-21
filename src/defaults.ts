@@ -65,7 +65,7 @@ export const defaultDraggingPieceGhostStyle: React.CSSProperties = {
 export const defaultArrowOptions = {
   primaryColor: '#ff0000', // color if no modifiers are held down when drawing an arrow
   secondaryColor: '#2f8335', // color if shift is held down when drawing an arrow
-  tertiaryColor: '#fcba03', // color if control is held down when drawing an arrow
+  tertiaryColor: '#0352fc', // color if control is held down when drawing an arrow
   engineColor: '#7500c9ff',
   arrowLengthReducerDenominator: 8, // the lower the denominator, the greater the arrow length reduction (e.g. 8 = 1/8 of a square width removed, 4 = 1/4 of a square width removed)
   sameTargetArrowLengthReducerDenominator: 4, // as above but for arrows targeting the same square (a greater reduction is used to avoid overlaps)
@@ -78,5 +78,5 @@ export const defaultArrowOptions = {
 export const defaultHighlightOptions = {
   primaryColor: '#ff0000', // color if no modifiers are held down when drawing an arrow
   secondaryColor: '#2f8335', // color if shift is held down when drawing an arrow
-  tertiaryColor: '#fcba03', // color if control is held down when drawing an arrow
+  tertiaryColor: '#0352fc', // color if control is held down when drawing an arrow
 };

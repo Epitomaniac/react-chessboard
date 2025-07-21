@@ -92,6 +92,7 @@ export const Square = memo(function Square({
       onMouseUp={(e) => {
         if (
           e.button === 0 &&
+          allowDrawingArrows &&
           !hasMovablePiece &&
           !isDialogOpen &&
           Object.keys(squareStyles).length === 0

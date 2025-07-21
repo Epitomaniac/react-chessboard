@@ -10,6 +10,15 @@ export function Highlights({ boardWidth, boardHeight }: Props) {
   const { id, highlights, highlightOptions, boardOrientation } =
     useChessboardContext();
 
+  const isValidHighlight = (item: any): item is Highlight => {
+    return (
+      typeof item === 'object' &&
+      typeof item.square === 'string' &&
+      ['primary', 'secondary', 'tertiary', 'engine'].includes(item.color)
+    );
+  };
+
+  if (!Array.isArray(highlights) || !highlights.every(isValidHighlight)) return;
   if (!boardWidth || !boardHeight) return null;
 
   const squareSize = boardWidth / 8;

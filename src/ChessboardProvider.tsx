@@ -420,7 +420,19 @@ export function ChessboardProvider({
 
   // acts as an event listener for the chessboard's arrows prop
   useEffect(() => {
-    if (JSON.stringify(externalArrows) !== JSON.stringify(arrows)) {
+    const isValidArrow = (item: any): item is Arrow => {
+      return (
+        typeof item === 'object' &&
+        item !== null &&
+        typeof item.startSquare === 'string' &&
+        typeof item.endSquare === 'string' &&
+        ['primary', 'secondary', 'tertiary', 'engine'].includes(item.color)
+      );
+    };
+    if (
+      arrows.every(isValidArrow) &&
+      JSON.stringify(externalArrows) !== JSON.stringify(arrows)
+    ) {
       setExternalArrows(arrows);
     }
   }, [arrows]);
