@@ -327,9 +327,9 @@ export function ChessboardProvider({
     }
 
     const isPromotionOrUndo = (() => {
-      const promotionPieces = ['Q', 'R', 'B', 'N']; // Queen, Rook, Bishop, Knight
+      const promotionPieces = ['Q', 'R', 'B', 'N'];
 
-      // Pawn disappeared, promoted piece appeared = promotion
+      // --- Detect promotion ---
       const pawnDisappearedSquares = Object.keys(currentPosition).filter(
         (sq) => {
           const oldPiece = currentPosition[sq];
@@ -339,13 +339,11 @@ export function ChessboardProvider({
       );
 
       const promotedAppearedSquares = Object.keys(newPosition).filter((sq) => {
-        const oldPiece = currentPosition[sq];
         const newPiece = newPosition[sq];
         return (
           newPiece &&
           promotionPieces.includes(newPiece.pieceType[1]) &&
-          (sq[1] === '8' || sq[1] === '1') &&
-          !oldPiece
+          (sq[1] === '8' || sq[1] === '1')
         );
       });
 
@@ -362,7 +360,7 @@ export function ChessboardProvider({
         }
       }
 
-      // Promoted piece disappeared, pawn appeared = promotion undo
+      // --- Detect promotion undo ---
       const promotedDisappearedSquares = Object.keys(currentPosition).filter(
         (sq) => {
           const oldPiece = currentPosition[sq];
@@ -370,7 +368,7 @@ export function ChessboardProvider({
           return (
             oldPiece &&
             promotionPieces.includes(oldPiece.pieceType[1]) &&
-            !newPiece
+            (!newPiece || newPiece.pieceType[1] !== oldPiece.pieceType[1])
           );
         },
       );
@@ -381,7 +379,7 @@ export function ChessboardProvider({
         return (
           newPiece?.pieceType?.[1] === 'P' &&
           (sq[1] === '7' || sq[1] === '2') &&
-          !oldPiece
+          (!oldPiece || oldPiece.pieceType[1] !== 'P')
         );
       });
 
@@ -390,8 +388,8 @@ export function ChessboardProvider({
         for (const pawnSquare of pawnAppearedSquares) {
           const pawnRank = Number(pawnSquare[1]);
           if (
-            (promoRank === 8 && pawnRank === 7) || // white promotion undo
-            (promoRank === 1 && pawnRank === 2) // black promotion undo
+            (promoRank === 8 && pawnRank === 7) || // undo white promotion
+            (promoRank === 1 && pawnRank === 2) // undo black promotion
           ) {
             return true;
           }

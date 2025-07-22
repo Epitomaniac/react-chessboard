@@ -14,7 +14,9 @@ type Story = StoryObj<typeof meta>;
 
 export const Promotion: Story = {
   render: () => {
-    const chessGameRef = useRef(new Chess('8/5P2/1k6/8/8/5K2/2p5/8 b - - 0 1'));
+    const chessGameRef = useRef(
+      new Chess('rnbqkbnr/pPppp1pp/8/8/8/8/PpPP1PPP/RNBQKBNR w KQkq - 0 1'),
+    );
     const chessGame = chessGameRef.current;
 
     const [chessPosition, setChessPosition] = useState(chessGame.fen());
@@ -83,7 +85,7 @@ export const Promotion: Story = {
     }, [promotionPiece]);
 
     function promote() {
-      chessGame.move('c1=Q');
+      chessGame.move({ from: 'b7', to: 'a8', promotion: 'q' });
       setChessPosition(chessGame.fen());
     }
 
@@ -93,7 +95,6 @@ export const Promotion: Story = {
     }
 
     const chessboardOptions = {
-      id: 'promotion',
       positionFen: chessPosition,
       onPieceDrop: makeMove,
       onPromotionPieceSelect: handlePromotionPieceSelect,
