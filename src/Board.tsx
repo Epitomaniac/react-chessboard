@@ -104,6 +104,7 @@ export function Board() {
 
         <Arrows boardWidth={boardWidth} boardHeight={boardHeight} />
         <Highlights boardWidth={boardWidth} boardHeight={boardHeight} />
+
         <PromotionDialog
           boardWidth={boardWidth}
           visible={visible}

@@ -75,8 +75,12 @@ export const defaultArrowOptions = {
   activeOpacity: 0.5, // opacity of arrow when it is being drawn
 };
 
-export const defaultHighlightOptions = {
+export const defaultHighlightsOptions = {
   primaryColor: '#ff0000', // color if no modifiers are held down when drawing an arrow
   secondaryColor: '#2f8335', // color if shift is held down when drawing an arrow
   tertiaryColor: '#0352fc', // color if control is held down when drawing an arrow
+};
+
+export const defaultPieceHighlightOptions = {
+  color: '#005380',
 };

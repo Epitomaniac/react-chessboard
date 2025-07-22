@@ -54,10 +54,16 @@ export const Square = memo(function Square({
     setNewArrowStartSquare,
     setNewArrowOverSquare,
     drawArrow,
+    pieceHighlight,
+    pieceHighlightOptions,
   } = useChessboardContext();
 
   const column = squareId.match(/^[a-z]+/)?.[0];
   const row = squareId.match(/\d+$/)?.[0];
+  const showPieceHighlight =
+    hasMovablePiece &&
+    'square' in pieceHighlight &&
+    pieceHighlight.square === squareId;
 
   return (
     <div
@@ -172,9 +178,25 @@ export const Square = memo(function Square({
           style={{
             width: '100%',
             height: '100%',
+            position: 'relative',
             ...squareStyles[squareId],
           }}
         >
+          {showPieceHighlight && (
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundImage: `linear-gradient(${pieceHighlightOptions.color}, ${pieceHighlightOptions.color})`,
+                opacity: 0.5,
+                pointerEvents: 'none',
+                zIndex: 1,
+              }}
+            />
+          )}
           {children}
         </div>
       )}
