@@ -8,7 +8,8 @@ export type Highlight = {
     color: 'primary' | 'secondary' | 'tertiary' | 'engine';
 };
 export type PieceHighlight = {
-    square: string;
+    from: string;
+    to?: string;
 } | {};
 export type SquareDataType = {
     squareId: string;

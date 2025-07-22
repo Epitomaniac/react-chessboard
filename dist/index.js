@@ -5141,9 +5141,6 @@ const defaultHighlightsOptions = {
     secondaryColor: '#2f8335', // color if shift is held down when drawing an arrow
     tertiaryColor: '#0352fc', // color if control is held down when drawing an arrow
 };
-const defaultPieceHighlightOptions = {
-    color: '#005380',
-};
 
 const ChessboardContext = React.createContext(null);
 const useChessboardContext = () => React.use(ChessboardContext);
@@ -5166,7 +5163,7 @@ function ChessboardProvider({ children, options, }) {
     // arrows
     allowDrawingArrows = true, arrows = [], arrowOptions = defaultArrowOptions, 
     // highlights
-    allowHighlights = true, highlights = [], highlightOptions = defaultHighlightsOptions, pieceHighlight = { square: '' }, pieceHighlightOptions = defaultPieceHighlightOptions, 
+    allowHighlights = true, highlights = [], highlightOptions = defaultHighlightsOptions, pieceHighlight = {}, pieceHighlightColor = '#005380', 
     // handlers
     onArrowsChange, onMouseOverSquare, onPieceClick, onPieceDrag, onPieceDrop, onSquareClick, onSquareRightClick, onPromotionPieceSelect, squareRenderer, } = options || {};
     // the piece currently being dragged
@@ -5538,7 +5535,7 @@ function ChessboardProvider({ children, options, }) {
             highlights,
             highlightOptions,
             pieceHighlight,
-            pieceHighlightOptions,
+            pieceHighlightColor,
             onMouseOverSquare,
             onPieceClick,
             onSquareClick,
@@ -5773,12 +5770,14 @@ const Piece = React.memo(function Piece({ clone, isMovable, isSparePiece = false
 });
 
 const Square = React.memo(function Square({ children, hasMovablePiece, squareId, isDialogOpen, isLightSquare, isOver, }) {
-    const { id, allowDrawingArrows, boardOrientation, currentPosition, squareStyle, squareStyles, darkSquareStyle, lightSquareStyle, dropSquareStyle, darkSquareNotationStyle, lightSquareNotationStyle, alphaNotationStyle, numericNotationStyle, showNotation, onMouseOverSquare, onSquareClick, onSquareRightClick, squareRenderer, newArrowStartSquare, newArrowOverSquare, clearArrows, setNewArrowStartSquare, setNewArrowOverSquare, drawArrow, pieceHighlight, pieceHighlightOptions, } = useChessboardContext();
+    const { id, allowDrawingArrows, boardOrientation, currentPosition, squareStyle, squareStyles, darkSquareStyle, lightSquareStyle, dropSquareStyle, darkSquareNotationStyle, lightSquareNotationStyle, alphaNotationStyle, numericNotationStyle, showNotation, onMouseOverSquare, onSquareClick, onSquareRightClick, squareRenderer, newArrowStartSquare, newArrowOverSquare, clearArrows, setNewArrowStartSquare, setNewArrowOverSquare, drawArrow, pieceHighlight, pieceHighlightColor, } = useChessboardContext();
     const column = squareId.match(/^[a-z]+/)?.[0];
     const row = squareId.match(/\d+$/)?.[0];
-    const showPieceHighlight = hasMovablePiece &&
-        'square' in pieceHighlight &&
-        pieceHighlight.square === squareId;
+    const isValidHighlight = (h) => {
+        return typeof h.from === 'string';
+    };
+    const showPieceHighlight = isValidHighlight(pieceHighlight) &&
+        (pieceHighlight.from === squareId || pieceHighlight.to === squareId);
     return (jsxRuntimeExports.jsxs("div", { id: `${id}-square-${squareId}`, style: {
             ...defaultSquareStyle,
             ...squareStyle,
@@ -5859,7 +5858,7 @@ const Square = React.memo(function Square({ children, hasMovablePiece, squareId,
                             left: 0,
                             right: 0,
                             bottom: 0,
-                            backgroundImage: `linear-gradient(${pieceHighlightOptions.color}, ${pieceHighlightOptions.color})`,
+                            backgroundImage: `linear-gradient(${pieceHighlightColor}, ${pieceHighlightColor})`,
                             opacity: 0.5,
                             pointerEvents: 'none',
                             zIndex: 0,
@@ -6059,7 +6058,6 @@ exports.defaultHighlightsOptions = defaultHighlightsOptions;
 exports.defaultLightSquareNotationStyle = defaultLightSquareNotationStyle;
 exports.defaultLightSquareStyle = defaultLightSquareStyle;
 exports.defaultNumericNotationStyle = defaultNumericNotationStyle;
-exports.defaultPieceHighlightOptions = defaultPieceHighlightOptions;
 exports.defaultPieces = defaultPieces;
 exports.defaultSquareStyle = defaultSquareStyle;
 exports.fenStringToPositionObject = fenStringToPositionObject;

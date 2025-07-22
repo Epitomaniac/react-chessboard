@@ -26,6 +26,3 @@ export declare const defaultHighlightsOptions: {
     secondaryColor: string;
     tertiaryColor: string;
 };
-export declare const defaultPieceHighlightOptions: {
-    color: string;
-};
