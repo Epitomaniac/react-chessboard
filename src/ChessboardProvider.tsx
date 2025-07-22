@@ -424,7 +424,15 @@ export function ChessboardProvider({
       return false;
     })();
 
-    if (isPromotionOrUndo) {
+    const isValidHighlight = (
+      h: PieceHighlight,
+    ): h is { from: string; to?: string } =>
+      typeof (h as any).from === 'string';
+
+    if (
+      (isValidHighlight(pieceHighlight) && pieceHighlight.to) ||
+      isPromotionOrUndo
+    ) {
       setCurrentPosition(newPosition);
       setWaitingForAnimationPosition(null);
       setPositionDifferences({});

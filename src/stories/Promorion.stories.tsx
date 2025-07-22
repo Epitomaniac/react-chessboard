@@ -91,6 +91,7 @@ export const Promotion: Story = {
     }
 
     const chessboardOptions = {
+      pieceHighlight: { from: 'e2', to: 'e4' },
       positionFen: chessPosition,
       onPieceDrop: makeMove,
       onPromotionPieceSelect: handlePromotionPieceSelect,
