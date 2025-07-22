@@ -337,72 +337,88 @@ export function ChessboardProvider({
     const isPromotionOrUndo = (() => {
       const promotionPieces = ['Q', 'R', 'B', 'N'];
 
-      // --- Detect promotion ---
-      const pawnDisappearedSquares = Object.keys(currentPosition).filter(
-        (sq) => {
-          const oldPiece = currentPosition[sq];
-          const newPiece = newPosition[sq];
-          return oldPiece?.pieceType?.[1] === 'P' && !newPiece;
-        },
-      );
-
-      const promotedAppearedSquares = Object.keys(newPosition).filter((sq) => {
-        const newPiece = newPosition[sq];
-        return (
-          newPiece &&
-          promotionPieces.includes(newPiece.pieceType[1]) &&
-          (sq[1] === '8' || sq[1] === '1')
-        );
+      // Track all changed squares
+      const changedSquares = Object.keys({
+        ...currentPosition,
+        ...newPosition,
+      }).filter((sq) => {
+        const oldPiece = currentPosition[sq]?.pieceType;
+        const newPiece = newPosition[sq]?.pieceType;
+        return oldPiece !== newPiece;
       });
 
-      for (const pawnSquare of pawnDisappearedSquares) {
-        const pawnRank = Number(pawnSquare[1]);
-        for (const promoSquare of promotedAppearedSquares) {
-          const promoRank = Number(promoSquare[1]);
+      // --- Detect promotion (including capture) ---
+      if (changedSquares.length === 2) {
+        const [sq1, sq2] = changedSquares;
+
+        const new1 = newPosition[sq1];
+
+        // Determine fromSq (emptied) and toSq (gained promoted piece)
+        const fromSq = new1 ? sq2 : sq1;
+        const toSq = new1 ? sq1 : sq2;
+
+        const oldFrom = currentPosition[fromSq];
+        const newTo = newPosition[toSq];
+
+        if (oldFrom && newTo) {
+          const oldColor = oldFrom.pieceType[0];
+          const oldType = oldFrom.pieceType[1];
+          const newType = newTo.pieceType[1];
+          const toRank = parseInt(toSq[1], 10);
+
+          const isWhitePromo =
+            oldColor === 'w' && oldType === 'P' && toRank === 8;
+          const isBlackPromo =
+            oldColor === 'b' && oldType === 'P' && toRank === 1;
+
           if (
-            (pawnRank === 7 && promoRank === 8) || // white promotion
-            (pawnRank === 2 && promoRank === 1) // black promotion
+            (isWhitePromo || isBlackPromo) &&
+            promotionPieces.includes(newType)
           ) {
             return true;
           }
         }
       }
 
-      // --- Detect promotion undo ---
-      const promotedDisappearedSquares = Object.keys(currentPosition).filter(
-        (sq) => {
-          const oldPiece = currentPosition[sq];
+      // --- Detect undo of promotion ---
+      const promotedDisappeared = Object.entries(currentPosition).filter(
+        ([sq, piece]) => {
           const newPiece = newPosition[sq];
-
           return (
-            oldPiece &&
-            promotionPieces.includes(oldPiece.pieceType[1]) &&
-            (sq[1] === '1' || sq[1] === '8') &&
-            (!newPiece || newPiece.pieceType !== oldPiece.pieceType)
+            piece &&
+            promotionPieces.includes(piece.pieceType[1]) &&
+            (sq[1] === '8' || sq[1] === '1') &&
+            (!newPiece || newPiece.pieceType !== piece.pieceType)
           );
         },
       );
 
-      const pawnAppearedSquares = Object.keys(newPosition).filter((sq) => {
+      const pawnAppeared = Object.entries(newPosition).filter(([sq, piece]) => {
         const oldPiece = currentPosition[sq];
-        const newPiece = newPosition[sq];
         return (
-          newPiece?.pieceType?.[1] === 'P' &&
+          piece?.pieceType?.[1] === 'P' &&
           (sq[1] === '7' || sq[1] === '2') &&
           (!oldPiece || oldPiece.pieceType[1] !== 'P')
         );
       });
 
-      for (const promoSquare of promotedDisappearedSquares) {
-        const promoRank = Number(promoSquare[1]);
-        for (const pawnSquare of pawnAppearedSquares) {
-          const pawnRank = Number(pawnSquare[1]);
-          if (
-            (promoRank === 8 && pawnRank === 7) || // undo white promotion
-            (promoRank === 1 && pawnRank === 2) // undo black promotion
-          ) {
-            return true;
-          }
+      if (promotedDisappeared.length === 1 && pawnAppeared.length === 1) {
+        const [promoSq] = promotedDisappeared[0];
+        const [pawnSq] = pawnAppeared[0];
+        const promoFile = promoSq[0];
+        const promoRank = Number(promoSq[1]);
+        const pawnFile = pawnSq[0];
+        const pawnRank = Number(pawnSq[1]);
+
+        const sameOrAdjacentFile =
+          Math.abs(promoFile.charCodeAt(0) - pawnFile.charCodeAt(0)) <= 1;
+
+        if (
+          sameOrAdjacentFile &&
+          ((promoRank === 8 && pawnRank === 7) ||
+            (promoRank === 1 && pawnRank === 2))
+        ) {
+          return true;
         }
       }
 

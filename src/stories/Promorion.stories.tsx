@@ -15,7 +15,7 @@ type Story = StoryObj<typeof meta>;
 export const Promotion: Story = {
   render: () => {
     const chessGameRef = useRef(
-      new Chess('rnbqkbnr/pPppp1pp/8/8/8/8/PpPP1PPP/RNBQKBNR w KQkq - 0 1'),
+      new Chess('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'),
     );
     const chessGame = chessGameRef.current;
 
@@ -85,11 +85,6 @@ export const Promotion: Story = {
       }
     }, [promotionPiece]);
 
-    function promote() {
-      chessGame.move({ from: 'b7', to: 'a8', promotion: 'r' });
-      setChessPosition(chessGame.fen());
-    }
-
     function undo() {
       chessGame.undo();
       setChessPosition(chessGame.fen());
@@ -114,7 +109,6 @@ export const Promotion: Story = {
       >
         <Chessboard options={chessboardOptions} />
         <div style={{ display: 'flex', gap: '50px' }}>
-          <button onClick={promote}>Promote</button>{' '}
           <button onClick={undo}>Undo</button>
         </div>
       </div>
