@@ -193,11 +193,18 @@ export const Square = memo(function Square({
                 backgroundImage: `linear-gradient(${pieceHighlightOptions.color}, ${pieceHighlightOptions.color})`,
                 opacity: 0.5,
                 pointerEvents: 'none',
-                zIndex: 1,
+                zIndex: 0,
               }}
             />
           )}
-          {children}
+          <div
+            style={{
+              position: 'relative',
+              zIndex: 1,
+            }}
+          >
+            {children}
+          </div>
         </div>
       )}
     </div>

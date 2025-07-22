@@ -78,7 +78,7 @@ export function Arrows({ boardWidth, boardHeight }: Props) {
         top: 0,
         left: 0,
         pointerEvents: 'none',
-        zIndex: 20, // above pieces
+        zIndex: 20,
       }}
     >
       {arrowsToDraw.map((arrow, i) => {
