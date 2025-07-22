@@ -5134,10 +5134,13 @@ const defaultArrowOptions = {
     opacity: 0.65, // opacity of arrow when not being drawn
     activeOpacity: 0.5, // opacity of arrow when it is being drawn
 };
-const defaultHighlightOptions = {
+const defaultHighlightsOptions = {
     primaryColor: '#ff0000', // color if no modifiers are held down when drawing an arrow
     secondaryColor: '#2f8335', // color if shift is held down when drawing an arrow
     tertiaryColor: '#0352fc', // color if control is held down when drawing an arrow
+};
+const defaultPieceHighlightOptions = {
+    color: '#005380',
 };
 
 const ChessboardContext = createContext(null);
@@ -5161,7 +5164,7 @@ function ChessboardProvider({ children, options, }) {
     // arrows
     allowDrawingArrows = true, arrows = [], arrowOptions = defaultArrowOptions, 
     // highlights
-    allowHighlights = true, highlights = [], highlightOptions = defaultHighlightOptions, 
+    allowHighlights = true, highlights = [], highlightOptions = defaultHighlightsOptions, pieceHighlight = { square: '' }, pieceHighlightOptions = defaultPieceHighlightOptions, 
     // handlers
     onArrowsChange, onMouseOverSquare, onPieceClick, onPieceDrag, onPieceDrop, onSquareClick, onSquareRightClick, onPromotionPieceSelect, squareRenderer, } = options || {};
     // the piece currently being dragged
@@ -5196,54 +5199,63 @@ function ChessboardProvider({ children, options, }) {
         }
         const isPromotionOrUndo = (() => {
             const promotionPieces = ['Q', 'R', 'B', 'N'];
-            // --- Detect promotion ---
-            const pawnDisappearedSquares = Object.keys(currentPosition).filter((sq) => {
-                const oldPiece = currentPosition[sq];
-                const newPiece = newPosition[sq];
-                return oldPiece?.pieceType?.[1] === 'P' && !newPiece;
+            // Track all changed squares
+            const changedSquares = Object.keys({
+                ...currentPosition,
+                ...newPosition,
+            }).filter((sq) => {
+                const oldPiece = currentPosition[sq]?.pieceType;
+                const newPiece = newPosition[sq]?.pieceType;
+                return oldPiece !== newPiece;
             });
-            const promotedAppearedSquares = Object.keys(newPosition).filter((sq) => {
-                const newPiece = newPosition[sq];
-                return (newPiece &&
-                    promotionPieces.includes(newPiece.pieceType[1]) &&
-                    (sq[1] === '8' || sq[1] === '1'));
-            });
-            for (const pawnSquare of pawnDisappearedSquares) {
-                const pawnRank = Number(pawnSquare[1]);
-                for (const promoSquare of promotedAppearedSquares) {
-                    const promoRank = Number(promoSquare[1]);
-                    if ((pawnRank === 7 && promoRank === 8) || // white promotion
-                        (pawnRank === 2 && promoRank === 1) // black promotion
-                    ) {
+            // --- Detect promotion (including capture) ---
+            if (changedSquares.length === 2) {
+                const [sq1, sq2] = changedSquares;
+                const new1 = newPosition[sq1];
+                // Determine fromSq (emptied) and toSq (gained promoted piece)
+                const fromSq = new1 ? sq2 : sq1;
+                const toSq = new1 ? sq1 : sq2;
+                const oldFrom = currentPosition[fromSq];
+                const newTo = newPosition[toSq];
+                if (oldFrom && newTo) {
+                    const oldColor = oldFrom.pieceType[0];
+                    const oldType = oldFrom.pieceType[1];
+                    const newType = newTo.pieceType[1];
+                    const toRank = parseInt(toSq[1], 10);
+                    const isWhitePromo = oldColor === 'w' && oldType === 'P' && toRank === 8;
+                    const isBlackPromo = oldColor === 'b' && oldType === 'P' && toRank === 1;
+                    if ((isWhitePromo || isBlackPromo) &&
+                        promotionPieces.includes(newType)) {
                         return true;
                     }
                 }
             }
-            // --- Detect promotion undo ---
-            const promotedDisappearedSquares = Object.keys(currentPosition).filter((sq) => {
-                const oldPiece = currentPosition[sq];
+            // --- Detect undo of promotion ---
+            const promotedDisappeared = Object.entries(currentPosition).filter(([sq, piece]) => {
                 const newPiece = newPosition[sq];
-                return (oldPiece &&
-                    promotionPieces.includes(oldPiece.pieceType[1]) &&
-                    (sq[1] === '1' || sq[1] === '8') &&
-                    (!newPiece || newPiece.pieceType !== oldPiece.pieceType));
+                return (piece &&
+                    promotionPieces.includes(piece.pieceType[1]) &&
+                    (sq[1] === '8' || sq[1] === '1') &&
+                    (!newPiece || newPiece.pieceType !== piece.pieceType));
             });
-            const pawnAppearedSquares = Object.keys(newPosition).filter((sq) => {
+            const pawnAppeared = Object.entries(newPosition).filter(([sq, piece]) => {
                 const oldPiece = currentPosition[sq];
-                const newPiece = newPosition[sq];
-                return (newPiece?.pieceType?.[1] === 'P' &&
+                return (piece?.pieceType?.[1] === 'P' &&
                     (sq[1] === '7' || sq[1] === '2') &&
                     (!oldPiece || oldPiece.pieceType[1] !== 'P'));
             });
-            for (const promoSquare of promotedDisappearedSquares) {
-                const promoRank = Number(promoSquare[1]);
-                for (const pawnSquare of pawnAppearedSquares) {
-                    const pawnRank = Number(pawnSquare[1]);
-                    if ((promoRank === 8 && pawnRank === 7) || // undo white promotion
-                        (promoRank === 1 && pawnRank === 2) // undo black promotion
-                    ) {
-                        return true;
-                    }
+            if (promotedDisappeared.length === 1 && pawnAppeared.length === 1) {
+                const [promoSq] = promotedDisappeared[0];
+                const [pawnSq] = pawnAppeared[0];
+                const promoFile = promoSq[0];
+                const promoRank = Number(promoSq[1]);
+                const pawnFile = pawnSq[0];
+                const pawnRank = Number(pawnSq[1]);
+                const sameOrAdjacentFile = Math.abs(promoFile.charCodeAt(0) - pawnFile.charCodeAt(0)) <= 1;
+                if (sameOrAdjacentFile &&
+                    ((promoRank === 8 && pawnRank === 7) ||
+                        (promoRank === 1 && pawnRank === 2))) {
+                    return true;
                 }
             }
             return false;
@@ -5523,6 +5535,8 @@ function ChessboardProvider({ children, options, }) {
             allowHighlights,
             highlights,
             highlightOptions,
+            pieceHighlight,
+            pieceHighlightOptions,
             onMouseOverSquare,
             onPieceClick,
             onSquareClick,
@@ -5757,9 +5771,12 @@ const Piece = memo(function Piece({ clone, isMovable, isSparePiece = false, posi
 });
 
 const Square = memo(function Square({ children, hasMovablePiece, squareId, isDialogOpen, isLightSquare, isOver, }) {
-    const { id, allowDrawingArrows, boardOrientation, currentPosition, squareStyle, squareStyles, darkSquareStyle, lightSquareStyle, dropSquareStyle, darkSquareNotationStyle, lightSquareNotationStyle, alphaNotationStyle, numericNotationStyle, showNotation, onMouseOverSquare, onSquareClick, onSquareRightClick, squareRenderer, newArrowStartSquare, newArrowOverSquare, clearArrows, setNewArrowStartSquare, setNewArrowOverSquare, drawArrow, } = useChessboardContext();
+    const { id, allowDrawingArrows, boardOrientation, currentPosition, squareStyle, squareStyles, darkSquareStyle, lightSquareStyle, dropSquareStyle, darkSquareNotationStyle, lightSquareNotationStyle, alphaNotationStyle, numericNotationStyle, showNotation, onMouseOverSquare, onSquareClick, onSquareRightClick, squareRenderer, newArrowStartSquare, newArrowOverSquare, clearArrows, setNewArrowStartSquare, setNewArrowOverSquare, drawArrow, pieceHighlight, pieceHighlightOptions, } = useChessboardContext();
     const column = squareId.match(/^[a-z]+/)?.[0];
     const row = squareId.match(/\d+$/)?.[0];
+    const showPieceHighlight = hasMovablePiece &&
+        'square' in pieceHighlight &&
+        pieceHighlight.square === squareId;
     return (jsxRuntimeExports.jsxs("div", { id: `${id}-square-${squareId}`, style: {
             ...defaultSquareStyle,
             ...squareStyle,
@@ -5829,11 +5846,22 @@ const Square = memo(function Square({ children, hasMovablePiece, squareId, isDia
                 piece: currentPosition[squareId] ?? null,
                 square: squareId,
                 children,
-            }) || (jsxRuntimeExports.jsx("div", { style: {
+            }) || (jsxRuntimeExports.jsxs("div", { style: {
                     width: '100%',
                     height: '100%',
+                    position: 'relative',
                     ...squareStyles[squareId],
-                }, children: children }))] }));
+                }, children: [showPieceHighlight && (jsxRuntimeExports.jsx("div", { style: {
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            backgroundImage: `linear-gradient(${pieceHighlightOptions.color}, ${pieceHighlightOptions.color})`,
+                            opacity: 0.5,
+                            pointerEvents: 'none',
+                            zIndex: 1,
+                        } })), children] }))] }));
 });
 
 function PromotionDialog({ boardWidth, visible, setVisible }) {
@@ -6008,4 +6036,4 @@ function SparePiece({ pieceType }) {
     return (jsxRuntimeExports.jsx(Draggable, { isSparePiece: true, position: pieceType, pieceType: pieceType, isMovable: true, children: jsxRuntimeExports.jsx(Piece, { isSparePiece: true, pieceType: pieceType, position: pieceType }) }));
 }
 
-export { Chessboard, ChessboardProvider, SparePiece, chessColumnToColumnIndex, chessRowToRowIndex, columnIndexToChessColumn, defaultAlphaNotationStyle, defaultArrowOptions, defaultBoardStyle, defaultDarkSquareNotationStyle, defaultDarkSquareStyle, defaultDraggingPieceGhostStyle, defaultDraggingPieceStyle, defaultDropSquareStyle, defaultHighlightOptions, defaultLightSquareNotationStyle, defaultLightSquareStyle, defaultNumericNotationStyle, defaultPieces, defaultSquareStyle, fenStringToPositionObject, generateBoard, getPositionUpdates, getRelativeCoords, rowIndexToChessRow, useChessboardContext };
+export { Chessboard, ChessboardProvider, SparePiece, chessColumnToColumnIndex, chessRowToRowIndex, columnIndexToChessColumn, defaultAlphaNotationStyle, defaultArrowOptions, defaultBoardStyle, defaultDarkSquareNotationStyle, defaultDarkSquareStyle, defaultDraggingPieceGhostStyle, defaultDraggingPieceStyle, defaultDropSquareStyle, defaultHighlightsOptions, defaultLightSquareNotationStyle, defaultLightSquareStyle, defaultNumericNotationStyle, defaultPieceHighlightOptions, defaultPieces, defaultSquareStyle, fenStringToPositionObject, generateBoard, getPositionUpdates, getRelativeCoords, rowIndexToChessRow, useChessboardContext };

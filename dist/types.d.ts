@@ -7,6 +7,9 @@ export type Highlight = {
     square: string;
     color: 'primary' | 'secondary' | 'tertiary' | 'engine';
 };
+export type PieceHighlight = {
+    square: string;
+} | {};
 export type SquareDataType = {
     squareId: string;
     isLightSquare: boolean;

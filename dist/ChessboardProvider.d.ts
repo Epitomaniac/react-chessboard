@@ -1,6 +1,6 @@
 import { getPositionUpdates } from './utils';
-import { Arrow, Highlight, SquareDataType, DraggingPieceDataType, PieceDropHandlerArgs, PieceHandlerArgs, PieceRenderObject, PositionDataType, SquareHandlerArgs, SquareArrowHandlerArgs } from './types';
-import { defaultArrowOptions, defaultHighlightOptions } from './defaults';
+import { Arrow, Highlight, PieceHighlight, SquareDataType, DraggingPieceDataType, PieceDropHandlerArgs, PieceHandlerArgs, PieceRenderObject, PositionDataType, SquareHandlerArgs, SquareArrowHandlerArgs } from './types';
+import { defaultArrowOptions, defaultHighlightsOptions, defaultPieceHighlightOptions } from './defaults';
 type Defined<T> = T extends undefined ? never : T;
 type ContextType = {
     id: Defined<ChessboardOptions['id']>;
@@ -31,6 +31,8 @@ type ContextType = {
     allowHighlights: Defined<ChessboardOptions['allowHighlights']>;
     highlights: Defined<ChessboardOptions['highlights']>;
     highlightOptions: Defined<ChessboardOptions['highlightOptions']>;
+    pieceHighlight: Defined<ChessboardOptions['pieceHighlight']>;
+    pieceHighlightOptions: Defined<ChessboardOptions['pieceHighlightOptions']>;
     onMouseOverSquare: ChessboardOptions['onMouseOverSquare'];
     onPieceClick: ChessboardOptions['onPieceClick'];
     onSquareClick: ChessboardOptions['onSquareClick'];
@@ -94,7 +96,9 @@ export type ChessboardOptions = {
     clearArrowsOnClick?: boolean;
     allowHighlights?: boolean;
     highlights?: Highlight[];
-    highlightOptions?: typeof defaultHighlightOptions;
+    highlightOptions?: typeof defaultHighlightsOptions;
+    pieceHighlight?: PieceHighlight;
+    pieceHighlightOptions?: typeof defaultPieceHighlightOptions;
     onArrowsChange?: (arrows: Arrow[]) => void;
     onMouseOverSquare?: ({ piece, square }: SquareHandlerArgs) => void;
     onPieceClick?: ({ isSparePiece, piece, square }: PieceHandlerArgs) => void;

@@ -21,8 +21,11 @@ export declare const defaultArrowOptions: {
     opacity: number;
     activeOpacity: number;
 };
-export declare const defaultHighlightOptions: {
+export declare const defaultHighlightsOptions: {
     primaryColor: string;
     secondaryColor: string;
     tertiaryColor: string;
+};
+export declare const defaultPieceHighlightOptions: {
+    color: string;
 };
