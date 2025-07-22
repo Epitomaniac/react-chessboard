@@ -5259,7 +5259,9 @@ function ChessboardProvider({ children, options, }) {
             }
             return false;
         })();
-        if (isPromotionOrUndo) {
+        const isValidHighlight = (h) => typeof h.from === 'string';
+        if ((isValidHighlight(pieceHighlight) && pieceHighlight.to) ||
+            isPromotionOrUndo) {
             setCurrentPosition(newPosition);
             setWaitingForAnimationPosition(null);
             setPositionDifferences({});
