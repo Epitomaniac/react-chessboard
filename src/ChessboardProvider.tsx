@@ -42,7 +42,6 @@ import {
   defaultAlphaNotationStyle,
   defaultArrowOptions,
   defaultHighlightsOptions,
-  defaultPieceHighlightOptions,
   defaultBoardStyle,
   defaultDarkSquareNotationStyle,
   defaultDarkSquareStyle,
@@ -102,7 +101,7 @@ type ContextType = {
   highlights: Defined<ChessboardOptions['highlights']>;
   highlightOptions: Defined<ChessboardOptions['highlightOptions']>;
   pieceHighlight: Defined<ChessboardOptions['pieceHighlight']>;
-  pieceHighlightOptions: Defined<ChessboardOptions['pieceHighlightOptions']>;
+  pieceHighlightColor: Defined<ChessboardOptions['pieceHighlightColor']>;
 
   onMouseOverSquare: ChessboardOptions['onMouseOverSquare'];
   onPieceClick: ChessboardOptions['onPieceClick'];
@@ -186,7 +185,7 @@ export type ChessboardOptions = {
   highlights?: Highlight[];
   highlightOptions?: typeof defaultHighlightsOptions;
   pieceHighlight?: PieceHighlight;
-  pieceHighlightOptions?: typeof defaultPieceHighlightOptions;
+  pieceHighlightColor?: string;
 
   // handlers
   onArrowsChange?: (arrows: Arrow[]) => void;
@@ -263,8 +262,8 @@ export function ChessboardProvider({
     allowHighlights = true,
     highlights = [],
     highlightOptions = defaultHighlightsOptions,
-    pieceHighlight = { square: '' },
-    pieceHighlightOptions = defaultPieceHighlightOptions,
+    pieceHighlight = {},
+    pieceHighlightColor = '#005380',
 
     // handlers
     onArrowsChange,
@@ -823,7 +822,7 @@ export function ChessboardProvider({
         highlights,
         highlightOptions,
         pieceHighlight,
-        pieceHighlightOptions,
+        pieceHighlightColor,
 
         onMouseOverSquare,
         onPieceClick,

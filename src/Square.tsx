@@ -10,7 +10,7 @@ import {
   defaultNumericNotationStyle,
   defaultSquareStyle,
 } from './defaults';
-import { SquareDataType } from './types';
+import { SquareDataType, PieceHighlight } from './types';
 
 type SquareProps = {
   children?: React.ReactNode;
@@ -55,15 +55,21 @@ export const Square = memo(function Square({
     setNewArrowOverSquare,
     drawArrow,
     pieceHighlight,
-    pieceHighlightOptions,
+    pieceHighlightColor,
   } = useChessboardContext();
 
   const column = squareId.match(/^[a-z]+/)?.[0];
   const row = squareId.match(/\d+$/)?.[0];
+
+  const isValidHighlight = (
+    h: PieceHighlight,
+  ): h is { from: string; to?: string } => {
+    return typeof (h as any).from === 'string';
+  };
+
   const showPieceHighlight =
-    hasMovablePiece &&
-    'square' in pieceHighlight &&
-    pieceHighlight.square === squareId;
+    isValidHighlight(pieceHighlight) &&
+    (pieceHighlight.from === squareId || pieceHighlight.to === squareId);
 
   return (
     <div
@@ -190,7 +196,7 @@ export const Square = memo(function Square({
                 left: 0,
                 right: 0,
                 bottom: 0,
-                backgroundImage: `linear-gradient(${pieceHighlightOptions.color}, ${pieceHighlightOptions.color})`,
+                backgroundImage: `linear-gradient(${pieceHighlightColor}, ${pieceHighlightColor})`,
                 opacity: 0.5,
                 pointerEvents: 'none',
                 zIndex: 0,

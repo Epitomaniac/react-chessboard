@@ -80,7 +80,3 @@ export const defaultHighlightsOptions = {
   secondaryColor: '#2f8335', // color if shift is held down when drawing an arrow
   tertiaryColor: '#0352fc', // color if control is held down when drawing an arrow
 };
-
-export const defaultPieceHighlightOptions = {
-  color: '#005380',
-};

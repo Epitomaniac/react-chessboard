@@ -20,7 +20,7 @@ export const PieceHighlight: Story = {
     };
 
     const chessboardOptions = {
-      pieceHighlight,
+      pieceHighlight: { from: 'e2', to: 'e4' },
       onSquareClick: handleSquareClick,
     };
 
