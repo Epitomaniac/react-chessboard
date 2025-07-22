@@ -365,10 +365,12 @@ export function ChessboardProvider({
         (sq) => {
           const oldPiece = currentPosition[sq];
           const newPiece = newPosition[sq];
+
           return (
             oldPiece &&
             promotionPieces.includes(oldPiece.pieceType[1]) &&
-            (!newPiece || newPiece.pieceType[1] !== oldPiece.pieceType[1])
+            (sq[1] === '1' || sq[1] === '8') &&
+            (!newPiece || newPiece.pieceType !== oldPiece.pieceType)
           );
         },
       );

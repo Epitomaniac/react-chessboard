@@ -81,11 +81,12 @@ export const Promotion: Story = {
         });
         setPromotionSource('');
         setPromotionTarget('');
+        setPromotionPiece(undefined);
       }
     }, [promotionPiece]);
 
     function promote() {
-      chessGame.move({ from: 'b7', to: 'a8', promotion: 'q' });
+      chessGame.move({ from: 'b7', to: 'a8', promotion: 'r' });
       setChessPosition(chessGame.fen());
     }
 
