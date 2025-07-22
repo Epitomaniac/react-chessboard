@@ -5603,7 +5603,7 @@ function Arrows({ boardWidth, boardHeight }) {
             top: 0,
             left: 0,
             pointerEvents: 'none',
-            zIndex: 20, // above pieces
+            zIndex: 20,
         }, children: arrowsToDraw.map((arrow, i) => {
             const from = getRelativeCoords(boardOrientation, boardWidth, arrow.startSquare);
             const to = getRelativeCoords(boardOrientation, boardWidth, arrow.endSquare);
@@ -5860,8 +5860,11 @@ const Square = memo(function Square({ children, hasMovablePiece, squareId, isDia
                             backgroundImage: `linear-gradient(${pieceHighlightOptions.color}, ${pieceHighlightOptions.color})`,
                             opacity: 0.5,
                             pointerEvents: 'none',
+                            zIndex: 0,
+                        } })), jsxRuntimeExports.jsx("div", { style: {
+                            position: 'relative',
                             zIndex: 1,
-                        } })), children] }))] }));
+                        }, children: children })] }))] }));
 });
 
 function PromotionDialog({ boardWidth, visible, setVisible }) {
