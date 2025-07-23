@@ -5157,7 +5157,7 @@ function ChessboardProvider({ children, options, }) {
     // animation
     animationDuration = 300, showAnimations = true, 
     // drag and drop
-    allowDragging = true, dragActivationDistance = 1, 
+    allowDragging = true, dragActivationDistance = 0, 
     // arrows
     allowDrawingArrows = true, arrows = [], arrowOptions = defaultArrowOptions, 
     // highlights
