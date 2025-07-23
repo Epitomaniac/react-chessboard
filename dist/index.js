@@ -5187,7 +5187,6 @@ function ChessboardProvider({ children, options, }) {
     const animationTimeoutRef = React.useRef(null);
     // if the position changes, we need to recreate the pieces array
     React.useEffect(() => {
-        clearArrows();
         const newPosition = typeof positionFen === 'string'
             ? fenStringToPositionObject(positionFen)
             : positionFen;
