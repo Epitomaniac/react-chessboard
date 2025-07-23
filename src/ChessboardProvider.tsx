@@ -424,15 +424,7 @@ export function ChessboardProvider({
       return false;
     })();
 
-    const isValidHighlight = (
-      h: PieceHighlight,
-    ): h is { from: string; to?: string } =>
-      typeof (h as any).from === 'string';
-
-    if (
-      (isValidHighlight(pieceHighlight) && pieceHighlight.to) ||
-      isPromotionOrUndo
-    ) {
+    if (isPromotionOrUndo) {
       setCurrentPosition(newPosition);
       setWaitingForAnimationPosition(null);
       setPositionDifferences({});
@@ -514,7 +506,7 @@ export function ChessboardProvider({
         clearTimeout(animationTimeoutRef.current);
       }
     };
-  }, [positionFen, pieceHighlight]);
+  }, [positionFen]);
 
   // if the orientation changes, we need to recreate the pieces array
   useEffect(() => {

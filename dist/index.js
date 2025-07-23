@@ -5259,9 +5259,7 @@ function ChessboardProvider({ children, options, }) {
             }
             return false;
         })();
-        const isValidHighlight = (h) => typeof h.from === 'string';
-        if ((isValidHighlight(pieceHighlight) && pieceHighlight.to) ||
-            isPromotionOrUndo) {
+        if (isPromotionOrUndo) {
             setCurrentPosition(newPosition);
             setWaitingForAnimationPosition(null);
             setPositionDifferences({});
@@ -5324,7 +5322,7 @@ function ChessboardProvider({ children, options, }) {
                 clearTimeout(animationTimeoutRef.current);
             }
         };
-    }, [positionFen, pieceHighlight]);
+    }, [positionFen]);
     // if the orientation changes, we need to recreate the pieces array
     React.useEffect(() => {
         setCurrentPosition(typeof positionFen === 'string'
