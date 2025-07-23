@@ -5322,7 +5322,7 @@ function ChessboardProvider({ children, options, }) {
                 clearTimeout(animationTimeoutRef.current);
             }
         };
-    }, [positionFen]);
+    }, [positionFen, pieceHighlight]);
     // if the orientation changes, we need to recreate the pieces array
     useEffect(() => {
         setCurrentPosition(typeof positionFen === 'string'
