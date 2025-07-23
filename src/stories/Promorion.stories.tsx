@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { Chessboard } from '../../src';
 import { Chess } from 'chess.js';
 import { PieceDropHandlerArgs } from '../../src';
+import type { Arrow } from '../types';
 
 const meta: Meta<typeof Chessboard> = {
   title: 'stories/Promotion',
@@ -85,6 +86,10 @@ export const Promotion: Story = {
       }
     }, [promotionPiece]);
 
+    function onArrowsChange(arrows: Arrow[]) {
+      console.log(arrows);
+    }
+
     function undo() {
       chessGame.undo();
       setChessPosition(chessGame.fen());
@@ -92,6 +97,7 @@ export const Promotion: Story = {
 
     const chessboardOptions = {
       positionFen: chessPosition,
+      onArrowsChange,
       onPieceDrop: makeMove,
       onPromotionPieceSelect: handlePromotionPieceSelect,
       promotionDialog,
