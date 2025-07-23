@@ -5183,12 +5183,9 @@ function ChessboardProvider({ children, options, }) {
     const [waitingForAnimationPosition, setWaitingForAnimationPosition] = useState(null);
     // the animation timeout whilst waiting for animation to complete
     const animationTimeoutRef = useRef(null);
-    // flag to prevent onArrowChange to run when arrows clear on position change
-    const isPositionChangingRef = useRef(false);
     // if the position changes, we need to recreate the pieces array
     useEffect(() => {
-        isPositionChangingRef.current = true;
-        clearArrows();
+        clearArrowsWithoutCallback();
         const newPosition = typeof positionFen === 'string'
             ? fenStringToPositionObject(positionFen)
             : positionFen;
@@ -5317,9 +5314,6 @@ function ChessboardProvider({ children, options, }) {
         }, animationDuration);
         // update the ref to the new timeout
         animationTimeoutRef.current = newTimeout;
-        setTimeout(() => {
-            isPositionChangingRef.current = false;
-        }, 0);
         // clear timeout on unmount
         return () => {
             if (animationTimeoutRef.current) {
@@ -5351,11 +5345,25 @@ function ChessboardProvider({ children, options, }) {
     }, [arrows]);
     // if the arrows change, call the onArrowsChange callback
     useEffect(() => {
-        if (!isPositionChangingRef.current) {
-            const filteredExternalArrows = externalArrows.filter((arrow) => arrow.color !== 'engine');
-            onArrowsChange?.([...filteredExternalArrows, ...internalArrows]);
-        }
+        if (suppressArrowChangeRef.current)
+            return;
+        const filteredExternalArrows = externalArrows.filter((arrow) => arrow.color !== 'engine');
+        onArrowsChange?.([...filteredExternalArrows, ...internalArrows]);
     }, [externalArrows, internalArrows]);
+    // so that clearing arrows on position change does not run onArrowsChange callback
+    const suppressArrowChangeRef = useRef(false);
+    function clearArrowsWithoutCallback() {
+        suppressArrowChangeRef.current = true;
+        const filteredExternalArrows = externalArrows.filter((arrow) => arrow.color === 'engine');
+        setInternalArrows([]);
+        setExternalArrows(filteredExternalArrows);
+        setNewArrowStartSquare(null);
+        setNewArrowOverSquare(null);
+        // Turn off suppression after state flush
+        setTimeout(() => {
+            suppressArrowChangeRef.current = false;
+        }, 10);
+    }
     function clearArrows() {
         const filteredExternalArrows = externalArrows.filter((arrow) => arrow.color === 'engine');
         setInternalArrows([]);
