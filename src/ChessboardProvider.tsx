@@ -251,7 +251,7 @@ export function ChessboardProvider({
 
     // drag and drop
     allowDragging = true,
-    dragActivationDistance = 1,
+    dragActivationDistance = 0,
 
     // arrows
     allowDrawingArrows = true,
