@@ -321,7 +321,6 @@ export function ChessboardProvider({
 
   // if the position changes, we need to recreate the pieces array
   useEffect(() => {
-    clearArrows();
     const newPosition =
       typeof positionFen === 'string'
         ? fenStringToPositionObject(positionFen)
