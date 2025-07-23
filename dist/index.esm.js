@@ -5183,8 +5183,12 @@ function ChessboardProvider({ children, options, }) {
     const [waitingForAnimationPosition, setWaitingForAnimationPosition] = useState(null);
     // the animation timeout whilst waiting for animation to complete
     const animationTimeoutRef = useRef(null);
+    // flag to prevent onArrowChange to run when arrows clear on position change
+    const isPositionChangingRef = useRef(false);
     // if the position changes, we need to recreate the pieces array
     useEffect(() => {
+        isPositionChangingRef.current = true;
+        clearArrows();
         const newPosition = typeof positionFen === 'string'
             ? fenStringToPositionObject(positionFen)
             : positionFen;
@@ -5313,6 +5317,9 @@ function ChessboardProvider({ children, options, }) {
         }, animationDuration);
         // update the ref to the new timeout
         animationTimeoutRef.current = newTimeout;
+        setTimeout(() => {
+            isPositionChangingRef.current = false;
+        }, 0);
         // clear timeout on unmount
         return () => {
             if (animationTimeoutRef.current) {
@@ -5344,8 +5351,10 @@ function ChessboardProvider({ children, options, }) {
     }, [arrows]);
     // if the arrows change, call the onArrowsChange callback
     useEffect(() => {
-        const filteredExternalArrows = externalArrows.filter((arrow) => arrow.color !== 'engine');
-        onArrowsChange?.([...filteredExternalArrows, ...internalArrows]);
+        if (!isPositionChangingRef.current) {
+            const filteredExternalArrows = externalArrows.filter((arrow) => arrow.color !== 'engine');
+            onArrowsChange?.([...filteredExternalArrows, ...internalArrows]);
+        }
     }, [externalArrows, internalArrows]);
     function clearArrows() {
         const filteredExternalArrows = externalArrows.filter((arrow) => arrow.color === 'engine');
