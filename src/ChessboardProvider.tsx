@@ -319,8 +319,13 @@ export function ChessboardProvider({
   // the animation timeout whilst waiting for animation to complete
   const animationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // flag to prevent onArrowChange to run when arrows clear on position change
+  const isPositionChangingRef = useRef(false);
+
   // if the position changes, we need to recreate the pieces array
   useEffect(() => {
+    isPositionChangingRef.current = true;
+    clearArrows();
     const newPosition =
       typeof positionFen === 'string'
         ? fenStringToPositionObject(positionFen)
@@ -499,6 +504,10 @@ export function ChessboardProvider({
     // update the ref to the new timeout
     animationTimeoutRef.current = newTimeout;
 
+    setTimeout(() => {
+      isPositionChangingRef.current = false;
+    }, 0);
+
     // clear timeout on unmount
     return () => {
       if (animationTimeoutRef.current) {
@@ -543,10 +552,12 @@ export function ChessboardProvider({
 
   // if the arrows change, call the onArrowsChange callback
   useEffect(() => {
-    const filteredExternalArrows = externalArrows.filter(
-      (arrow) => arrow.color !== 'engine',
-    );
-    onArrowsChange?.([...filteredExternalArrows, ...internalArrows]);
+    if (!isPositionChangingRef.current) {
+      const filteredExternalArrows = externalArrows.filter(
+        (arrow) => arrow.color !== 'engine',
+      );
+      onArrowsChange?.([...filteredExternalArrows, ...internalArrows]);
+    }
   }, [externalArrows, internalArrows]);
 
   function clearArrows() {
