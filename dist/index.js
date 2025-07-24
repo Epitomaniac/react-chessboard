@@ -5962,11 +5962,12 @@ function PromotionDialog({ boardWidth, visible, setVisible }) {
         const PieceSvg = pieces[option]; // grab the component
         return jsxRuntimeExports.jsx(PieceSvg, {}); // render it
     };
-    return promotionDialog.type === 'modal' ? (jsxRuntimeExports.jsx("div", { style: dialogStyles.modal, children: jsxRuntimeExports.jsx("div", { ref: dialogRef, style: dialogStyles.modalContent, children: orderedPromotionOptions.map((option) => (jsxRuntimeExports.jsx("div", { onClick: () => {
+    return promotionDialog.type === 'modal' ? (jsxRuntimeExports.jsx("div", { style: dialogStyles.modal, children: jsxRuntimeExports.jsx("div", { ref: dialogRef, style: dialogStyles.modalContent, children: orderedPromotionOptions.map((option) => (jsxRuntimeExports.jsx("div", { tabIndex: -1, onPointerDown: () => {
                     onPromotionPieceSelect?.(option);
                     setVisible(false);
-                }, onMouseOver: () => setIsHover(option), onMouseOut: () => setIsHover(undefined), style: {
+                }, onPointerEnter: () => setIsHover(option), onPointerLeave: () => setIsHover(undefined), style: {
                     cursor: 'pointer',
+                    touchAction: 'none',
                     borderRadius: '8px',
                     padding: '4px',
                     backgroundColor: isHover === option ? '#f0ad4e' : 'white',
@@ -5987,8 +5988,9 @@ function PromotionDialog({ boardWidth, visible, setVisible }) {
                 boxSizing: 'border-box',
                 border: '1px solid gray',
                 ...dialogStyles.vertical,
-            }, title: "Choose promotion piece", children: orderedPromotionOptions.map((option) => (jsxRuntimeExports.jsx("div", { onClick: () => onPromotionPieceSelect?.(option), onMouseOver: () => setIsHover(option), onMouseOut: () => setIsHover(undefined), style: {
+            }, title: "Choose promotion piece", children: orderedPromotionOptions.map((option) => (jsxRuntimeExports.jsx("div", { tabIndex: -1, onClick: () => onPromotionPieceSelect?.(option), onPointerEnter: () => setIsHover(option), onPointerLeave: () => setIsHover(undefined), style: {
                     cursor: 'pointer',
+                    touchAction: 'none',
                     backgroundColor: isHover === option ? 'orange' : '#cabfa6ff',
                     transition: 'all 0.1s ease-out',
                 }, children: jsxRuntimeExports.jsx("svg", { viewBox: "1 1 43 43", width: boardWidth / 8, height: boardWidth / 8, style: {

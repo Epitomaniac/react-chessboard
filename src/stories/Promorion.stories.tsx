@@ -16,7 +16,7 @@ type Story = StoryObj<typeof meta>;
 export const Promotion: Story = {
   render: () => {
     const chessGameRef = useRef(
-      new Chess('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'),
+      new Chess('rn1qkb1r/pP2pppp/4bn2/8/8/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1'),
     );
     const chessGame = chessGameRef.current;
 

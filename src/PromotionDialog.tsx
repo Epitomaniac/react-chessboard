@@ -123,15 +123,17 @@ export function PromotionDialog({ boardWidth, visible, setVisible }: Props) {
       <div ref={dialogRef} style={dialogStyles.modalContent}>
         {orderedPromotionOptions.map((option) => (
           <div
+            tabIndex={-1}
             key={option}
-            onClick={() => {
+            onPointerDown={() => {
               onPromotionPieceSelect?.(option);
               setVisible(false);
             }}
-            onMouseOver={() => setIsHover(option)}
-            onMouseOut={() => setIsHover(undefined)}
+            onPointerEnter={() => setIsHover(option)}
+            onPointerLeave={() => setIsHover(undefined)}
             style={{
               cursor: 'pointer',
+              touchAction: 'none',
               borderRadius: '8px',
               padding: '4px',
               backgroundColor: isHover === option ? '#f0ad4e' : 'white',
@@ -177,12 +179,14 @@ export function PromotionDialog({ boardWidth, visible, setVisible }: Props) {
       >
         {orderedPromotionOptions.map((option) => (
           <div
+            tabIndex={-1}
             key={option}
             onClick={() => onPromotionPieceSelect?.(option)}
-            onMouseOver={() => setIsHover(option)}
-            onMouseOut={() => setIsHover(undefined)}
+            onPointerEnter={() => setIsHover(option)}
+            onPointerLeave={() => setIsHover(undefined)}
             style={{
               cursor: 'pointer',
+              touchAction: 'none',
               backgroundColor: isHover === option ? 'orange' : '#cabfa6ff',
               transition: 'all 0.1s ease-out',
             }}
