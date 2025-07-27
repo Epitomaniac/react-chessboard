@@ -125,6 +125,7 @@ type ContextType = {
   ) => void;
   internalArrows: Arrow[];
   externalArrows: Arrow[];
+  engineArrows: Arrow[];
   drawArrow: (
     newArrowEndSquare: string,
     modifiers?: { shiftKey: boolean; ctrlKey: boolean },
@@ -311,6 +312,7 @@ export function ChessboardProvider({
   } | null>(null);
   const [internalArrows, setInternalArrows] = useState<Arrow[]>([]);
   const [externalArrows, setExternalArrows] = useState<Arrow[]>([]);
+  const [engineArrows, setEngineArrows] = useState<Arrow[]>([]);
 
   // position we are animating to, if a new position comes in before the animation completes, we will use this to set the new position
   const [waitingForAnimationPosition, setWaitingForAnimationPosition] =
@@ -538,18 +540,15 @@ export function ChessboardProvider({
       arrows.every(isValidArrow) &&
       JSON.stringify(externalArrows) !== JSON.stringify(arrows)
     ) {
-      setExternalArrows(arrows);
+      setEngineArrows(arrows.filter((arrow) => arrow.color === 'engine'));
+      setExternalArrows(arrows.filter((arrow) => arrow.color !== 'engine'));
     }
   }, [arrows]);
 
   // if the arrows change, call the onArrowsChange callback
   useEffect(() => {
     if (suppressArrowChangeRef.current) return;
-
-    const filteredExternalArrows = externalArrows.filter(
-      (arrow) => arrow.color !== 'engine',
-    );
-    onArrowsChange?.([...filteredExternalArrows, ...internalArrows]);
+    onArrowsChange?.([...externalArrows, ...internalArrows]);
   }, [externalArrows, internalArrows]);
 
   // so that clearing arrows on position change does not run onArrowsChange callback
@@ -557,11 +556,8 @@ export function ChessboardProvider({
   function clearArrowsWithoutCallback() {
     suppressArrowChangeRef.current = true;
 
-    const filteredExternalArrows = externalArrows.filter(
-      (arrow) => arrow.color === 'engine',
-    );
     setInternalArrows([]);
-    setExternalArrows(filteredExternalArrows);
+    setExternalArrows([]);
     setNewArrowStartSquare(null);
     setNewArrowOverSquare(null);
 
@@ -572,11 +568,8 @@ export function ChessboardProvider({
   }
 
   function clearArrows() {
-    const filteredExternalArrows = externalArrows.filter(
-      (arrow) => arrow.color === 'engine',
-    );
     setInternalArrows([]);
-    setExternalArrows(filteredExternalArrows);
+    setExternalArrows([]);
     setNewArrowStartSquare(null);
     setNewArrowOverSquare(null);
   }
@@ -608,8 +601,7 @@ export function ChessboardProvider({
         (arrow) =>
           arrow.startSquare === newArrowStartSquare &&
           arrow.endSquare === newArrowEndSquare &&
-          arrow.color !== arrowColor &&
-          arrow.color !== 'engine',
+          arrow.color !== arrowColor,
       );
 
       // if the arrow already exists, clear it
@@ -864,6 +856,7 @@ export function ChessboardProvider({
         setNewArrowOverSquare: setNewArrowOverSquareWithModifiers,
         internalArrows,
         externalArrows,
+        engineArrows,
         drawArrow,
         clearArrows,
       }}

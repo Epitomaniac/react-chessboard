@@ -13,6 +13,7 @@ export function Arrows({ boardWidth, boardHeight }: Props) {
     id,
     externalArrows,
     internalArrows,
+    engineArrows,
     arrowOptions,
     boardOrientation,
     newArrowStartSquare,
@@ -38,7 +39,7 @@ export function Arrows({ boardWidth, boardHeight }: Props) {
   // ---------------------------------------------------------------------------
   // 2 · Merge and deduplicate, giving precedence to arrows with color “engine”
   // ---------------------------------------------------------------------------
-  const combined = [...externalArrows, ...internalArrows];
+  const combined = [...engineArrows, ...externalArrows, ...internalArrows];
   const byKey = new Map<string, (typeof combined)[number]>();
 
   for (const arrow of combined) {
