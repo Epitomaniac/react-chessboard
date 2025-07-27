@@ -56,6 +56,7 @@ type ContextType = {
     }) => void;
     internalArrows: Arrow[];
     externalArrows: Arrow[];
+    engineArrows: Arrow[];
     drawArrow: (newArrowEndSquare: string, modifiers?: {
         shiftKey: boolean;
         ctrlKey: boolean;

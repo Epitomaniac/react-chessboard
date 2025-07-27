@@ -5181,6 +5181,7 @@ function ChessboardProvider({ children, options, }) {
     const [newArrowOverSquare, setNewArrowOverSquare] = React.useState(null);
     const [internalArrows, setInternalArrows] = React.useState([]);
     const [externalArrows, setExternalArrows] = React.useState([]);
+    const [engineArrows, setEngineArrows] = React.useState([]);
     // position we are animating to, if a new position comes in before the animation completes, we will use this to set the new position
     const [waitingForAnimationPosition, setWaitingForAnimationPosition] = React.useState(null);
     // the animation timeout whilst waiting for animation to complete
@@ -5342,23 +5343,22 @@ function ChessboardProvider({ children, options, }) {
         };
         if (arrows.every(isValidArrow) &&
             JSON.stringify(externalArrows) !== JSON.stringify(arrows)) {
-            setExternalArrows(arrows);
+            setEngineArrows(arrows.filter((arrow) => arrow.color === 'engine'));
+            setExternalArrows(arrows.filter((arrow) => arrow.color !== 'engine'));
         }
     }, [arrows]);
     // if the arrows change, call the onArrowsChange callback
     React.useEffect(() => {
         if (suppressArrowChangeRef.current)
             return;
-        const filteredExternalArrows = externalArrows.filter((arrow) => arrow.color !== 'engine');
-        onArrowsChange?.([...filteredExternalArrows, ...internalArrows]);
+        onArrowsChange?.([...externalArrows, ...internalArrows]);
     }, [externalArrows, internalArrows]);
     // so that clearing arrows on position change does not run onArrowsChange callback
     const suppressArrowChangeRef = React.useRef(false);
     function clearArrowsWithoutCallback() {
         suppressArrowChangeRef.current = true;
-        const filteredExternalArrows = externalArrows.filter((arrow) => arrow.color === 'engine');
         setInternalArrows([]);
-        setExternalArrows(filteredExternalArrows);
+        setExternalArrows([]);
         setNewArrowStartSquare(null);
         setNewArrowOverSquare(null);
         // Turn off suppression after state flush
@@ -5367,9 +5367,8 @@ function ChessboardProvider({ children, options, }) {
         }, 10);
     }
     function clearArrows() {
-        const filteredExternalArrows = externalArrows.filter((arrow) => arrow.color === 'engine');
         setInternalArrows([]);
-        setExternalArrows(filteredExternalArrows);
+        setExternalArrows([]);
         setNewArrowStartSquare(null);
         setNewArrowOverSquare(null);
     }
@@ -5388,8 +5387,7 @@ function ChessboardProvider({ children, options, }) {
             arrow.color === arrowColor);
         const arrowExistsWithDifferentColor = allArrows.some((arrow) => arrow.startSquare === newArrowStartSquare &&
             arrow.endSquare === newArrowEndSquare &&
-            arrow.color !== arrowColor &&
-            arrow.color !== 'engine');
+            arrow.color !== arrowColor);
         // if the arrow already exists, clear it
         if (arrowExists) {
             setInternalArrows((prev) => prev.filter((arrow) => !(arrow.startSquare === newArrowStartSquare &&
@@ -5570,13 +5568,14 @@ function ChessboardProvider({ children, options, }) {
             setNewArrowOverSquare: setNewArrowOverSquareWithModifiers,
             internalArrows,
             externalArrows,
+            engineArrows,
             drawArrow,
             clearArrows,
         }, children: jsxRuntimeExports.jsx(DndContext, { collisionDetection: collisionDetection, autoScroll: false, onDragStart: handleDragStart, onDragEnd: handleDragEnd, onDragCancel: handleDragCancel, sensors: sensors, children: children }) }));
 }
 
 function Arrows({ boardWidth, boardHeight }) {
-    const { id, externalArrows, internalArrows, arrowOptions, boardOrientation, newArrowStartSquare, newArrowOverSquare, } = useChessboardContext();
+    const { id, externalArrows, internalArrows, engineArrows, arrowOptions, boardOrientation, newArrowStartSquare, newArrowOverSquare, } = useChessboardContext();
     if (!boardWidth)
         return null;
     // ---------------------------------------------------------------------------
@@ -5594,7 +5593,7 @@ function Arrows({ boardWidth, boardHeight }) {
     // ---------------------------------------------------------------------------
     // 2 · Merge and deduplicate, giving precedence to arrows with color “engine”
     // ---------------------------------------------------------------------------
-    const combined = [...externalArrows, ...internalArrows];
+    const combined = [...engineArrows, ...externalArrows, ...internalArrows];
     const byKey = new Map();
     for (const arrow of combined) {
         const key = `${arrow.startSquare}-${arrow.endSquare}`;
