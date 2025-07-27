@@ -82,10 +82,15 @@ export const AnalysisBoard: Story = {
       simulateEngine();
     }, []);
 
+    function onArrowsChange(arrows: Arrow[]) {
+      console.log(arrows);
+    }
+
     // set the chessboard options, using arrows to show the best move
     const chessboardOptions = {
       arrows: arrow,
       positionFen: chessPosition,
+      onArrowsChange,
       onPieceDrop,
     };
 

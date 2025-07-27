@@ -536,13 +536,19 @@ export function ChessboardProvider({
         ['primary', 'secondary', 'tertiary', 'engine'].includes(item.color)
       );
     };
-    if (
-      arrows.every(isValidArrow) &&
-      JSON.stringify(externalArrows) !== JSON.stringify(arrows)
-    ) {
-      setEngineArrows(arrows.filter((arrow) => arrow.color === 'engine'));
-      setExternalArrows(arrows.filter((arrow) => arrow.color !== 'engine'));
+
+    if (!arrows.every(isValidArrow)) return;
+
+    const newEngine = arrows.filter((a) => a.color === 'engine');
+    const newExternal = arrows.filter((a) => a.color !== 'engine');
+
+    // Only update externalArrows if it actually changed
+    if (JSON.stringify(newExternal) !== JSON.stringify(externalArrows)) {
+      setExternalArrows(newExternal);
     }
+
+    // Always update engineArrows — it's internal only
+    setEngineArrows(newEngine);
   }, [arrows]);
 
   // if the arrows change, call the onArrowsChange callback
