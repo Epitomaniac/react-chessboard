@@ -50,7 +50,7 @@ export const Square = memo(function Square({
     squareRenderer,
     newArrowStartSquare,
     newArrowOverSquare,
-    clearArrows,
+    clearArrowsWithCallback,
     setNewArrowStartSquare,
     setNewArrowOverSquare,
     drawArrow,
@@ -109,7 +109,7 @@ export const Square = memo(function Square({
           !isDialogOpen &&
           Object.keys(squareStyles).length === 0
         ) {
-          clearArrows();
+          clearArrowsWithCallback();
         }
         if (e.button === 2) {
           e.preventDefault();

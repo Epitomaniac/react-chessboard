@@ -38,7 +38,6 @@ type ContextType = {
     onSquareClick: ChessboardOptions['onSquareClick'];
     onSquareRightClick: ChessboardOptions['onSquareRightClick'];
     onPromotionPieceSelect: ChessboardOptions['onPromotionPieceSelect'];
-    onArrowsChange: ChessboardOptions['onArrowsChange'];
     squareRenderer: ChessboardOptions['squareRenderer'];
     board: SquareDataType[][];
     isWrapped: boolean;
@@ -62,7 +61,7 @@ type ContextType = {
         shiftKey: boolean;
         ctrlKey: boolean;
     }) => void;
-    clearArrows: () => void;
+    clearArrowsWithCallback: () => void;
 };
 export declare const useChessboardContext: () => ContextType;
 export type ChessboardOptions = {

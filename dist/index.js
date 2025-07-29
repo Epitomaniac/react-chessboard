@@ -5182,6 +5182,7 @@ function ChessboardProvider({ children, options, }) {
     const [internalArrows, setInternalArrows] = React.useState([]);
     const [externalArrows, setExternalArrows] = React.useState([]);
     const [engineArrows, setEngineArrows] = React.useState([]);
+    const [arrowDrawn, setArrowDrawn] = React.useState(false);
     // position we are animating to, if a new position comes in before the animation completes, we will use this to set the new position
     const [waitingForAnimationPosition, setWaitingForAnimationPosition] = React.useState(null);
     // the animation timeout whilst waiting for animation to complete
@@ -5353,11 +5354,21 @@ function ChessboardProvider({ children, options, }) {
             setEngineArrows(newEngine);
         }
     }, [arrows]);
+    React.useEffect(() => {
+        onArrowsChange?.([...internalArrows, ...externalArrows]);
+    }, [arrowDrawn]);
     function clearArrows() {
         setInternalArrows([]);
         setExternalArrows([]);
         setNewArrowStartSquare(null);
         setNewArrowOverSquare(null);
+    }
+    function clearArrowsWithCallback() {
+        setInternalArrows([]);
+        setExternalArrows([]);
+        setNewArrowStartSquare(null);
+        setNewArrowOverSquare(null);
+        setArrowDrawn((prev) => !prev);
     }
     const drawArrow = React.useCallback((newArrowEndSquare, modifiers) => {
         if (!allowDrawingArrows) {
@@ -5385,6 +5396,7 @@ function ChessboardProvider({ children, options, }) {
                 arrow.color === arrowColor)));
             setNewArrowStartSquare(null);
             setNewArrowOverSquare(null);
+            setArrowDrawn((prev) => !prev);
             return;
         }
         // if the arrow exists with a different color, overwrite it
@@ -5407,6 +5419,7 @@ function ChessboardProvider({ children, options, }) {
         }
         setNewArrowStartSquare(null);
         setNewArrowOverSquare(null);
+        setArrowDrawn((prev) => !prev);
     }, [
         allowDrawingArrows,
         externalArrows,
@@ -5542,7 +5555,6 @@ function ChessboardProvider({ children, options, }) {
             onSquareClick,
             onSquareRightClick,
             onPromotionPieceSelect,
-            onArrowsChange,
             squareRenderer,
             // internal state
             board,
@@ -5558,13 +5570,12 @@ function ChessboardProvider({ children, options, }) {
             externalArrows,
             engineArrows,
             drawArrow,
-            clearArrows,
+            clearArrowsWithCallback,
         }, children: jsxRuntimeExports.jsx(DndContext, { collisionDetection: collisionDetection, autoScroll: false, onDragStart: handleDragStart, onDragEnd: handleDragEnd, onDragCancel: handleDragCancel, sensors: sensors, children: children }) }));
 }
 
 function Arrows({ boardWidth, boardHeight }) {
-    const { id, externalArrows, internalArrows, engineArrows, arrowOptions, boardOrientation, newArrowStartSquare, newArrowOverSquare, onArrowsChange, } = useChessboardContext();
-    const prevArrowsRef = React.useRef([]);
+    const { id, externalArrows, internalArrows, engineArrows, arrowOptions, boardOrientation, newArrowStartSquare, newArrowOverSquare, } = useChessboardContext();
     if (!boardWidth)
         return null;
     // ---------------------------------------------------------------------------
@@ -5598,20 +5609,6 @@ function Arrows({ boardWidth, boardHeight }) {
         });
     }
     const arrowsToDraw = Array.from(byKey.values());
-    // Filter out engine + currently drawing
-    const arrowsForCallback = arrowsToDraw.filter((arrow) => {
-        const isEngine = arrow.color === 'engine';
-        const isCurrentlyDrawing = currentlyDrawingArrow &&
-            arrow.startSquare === currentlyDrawingArrow.startSquare &&
-            arrow.endSquare === currentlyDrawingArrow.endSquare;
-        return !isEngine && !isCurrentlyDrawing;
-    });
-    const prevJSON = JSON.stringify(prevArrowsRef.current);
-    const nextJSON = JSON.stringify(arrowsForCallback);
-    if (prevJSON !== nextJSON) {
-        prevArrowsRef.current = arrowsForCallback;
-        onArrowsChange?.(arrowsForCallback);
-    }
     // ---------------------------------------------------------------------------
     // 3 · Render
     // ---------------------------------------------------------------------------
@@ -5788,7 +5785,7 @@ const Piece = React.memo(function Piece({ clone, isMovable, isSparePiece = false
 });
 
 const Square = React.memo(function Square({ children, hasMovablePiece, squareId, isDialogOpen, isLightSquare, isOver, }) {
-    const { id, allowDrawingArrows, boardOrientation, currentPosition, squareStyle, squareStyles, darkSquareStyle, lightSquareStyle, dropSquareStyle, darkSquareNotationStyle, lightSquareNotationStyle, alphaNotationStyle, numericNotationStyle, showNotation, onMouseOverSquare, onSquareClick, onSquareRightClick, squareRenderer, newArrowStartSquare, newArrowOverSquare, clearArrows, setNewArrowStartSquare, setNewArrowOverSquare, drawArrow, pieceHighlight, pieceHighlightColor, } = useChessboardContext();
+    const { id, allowDrawingArrows, boardOrientation, currentPosition, squareStyle, squareStyles, darkSquareStyle, lightSquareStyle, dropSquareStyle, darkSquareNotationStyle, lightSquareNotationStyle, alphaNotationStyle, numericNotationStyle, showNotation, onMouseOverSquare, onSquareClick, onSquareRightClick, squareRenderer, newArrowStartSquare, newArrowOverSquare, clearArrowsWithCallback, setNewArrowStartSquare, setNewArrowOverSquare, drawArrow, pieceHighlight, pieceHighlightColor, } = useChessboardContext();
     const column = squareId.match(/^[a-z]+/)?.[0];
     const row = squareId.match(/\d+$/)?.[0];
     const isValidHighlight = (h) => {
@@ -5822,7 +5819,7 @@ const Square = React.memo(function Square({ children, hasMovablePiece, squareId,
                 !hasMovablePiece &&
                 !isDialogOpen &&
                 Object.keys(squareStyles).length === 0) {
-                clearArrows();
+                clearArrowsWithCallback();
             }
             if (e.button === 2) {
                 e.preventDefault();

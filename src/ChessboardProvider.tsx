@@ -108,7 +108,6 @@ type ContextType = {
   onSquareClick: ChessboardOptions['onSquareClick'];
   onSquareRightClick: ChessboardOptions['onSquareRightClick'];
   onPromotionPieceSelect: ChessboardOptions['onPromotionPieceSelect'];
-  onArrowsChange: ChessboardOptions['onArrowsChange'];
   squareRenderer: ChessboardOptions['squareRenderer'];
 
   // internal state
@@ -131,7 +130,7 @@ type ContextType = {
     newArrowEndSquare: string,
     modifiers?: { shiftKey: boolean; ctrlKey: boolean },
   ) => void;
-  clearArrows: () => void;
+  clearArrowsWithCallback: () => void;
 };
 
 const ChessboardContext = createContext<ContextType | null>(null);
@@ -314,6 +313,7 @@ export function ChessboardProvider({
   const [internalArrows, setInternalArrows] = useState<Arrow[]>([]);
   const [externalArrows, setExternalArrows] = useState<Arrow[]>([]);
   const [engineArrows, setEngineArrows] = useState<Arrow[]>([]);
+  const [arrowDrawn, setArrowDrawn] = useState(false);
 
   // position we are animating to, if a new position comes in before the animation completes, we will use this to set the new position
   const [waitingForAnimationPosition, setWaitingForAnimationPosition] =
@@ -553,11 +553,23 @@ export function ChessboardProvider({
     }
   }, [arrows]);
 
+  useEffect(() => {
+    onArrowsChange?.([...internalArrows, ...externalArrows]);
+  }, [arrowDrawn]);
+
   function clearArrows() {
     setInternalArrows([]);
     setExternalArrows([]);
     setNewArrowStartSquare(null);
     setNewArrowOverSquare(null);
+  }
+
+  function clearArrowsWithCallback() {
+    setInternalArrows([]);
+    setExternalArrows([]);
+    setNewArrowStartSquare(null);
+    setNewArrowOverSquare(null);
+    setArrowDrawn((prev) => !prev);
   }
 
   const drawArrow = useCallback(
@@ -614,6 +626,7 @@ export function ChessboardProvider({
         );
         setNewArrowStartSquare(null);
         setNewArrowOverSquare(null);
+        setArrowDrawn((prev) => !prev);
         return;
       }
 
@@ -653,6 +666,7 @@ export function ChessboardProvider({
 
       setNewArrowStartSquare(null);
       setNewArrowOverSquare(null);
+      setArrowDrawn((prev) => !prev);
     },
     [
       allowDrawingArrows,
@@ -828,7 +842,6 @@ export function ChessboardProvider({
         onSquareClick,
         onSquareRightClick,
         onPromotionPieceSelect,
-        onArrowsChange,
         squareRenderer,
 
         // internal state
@@ -845,7 +858,7 @@ export function ChessboardProvider({
         externalArrows,
         engineArrows,
         drawArrow,
-        clearArrows,
+        clearArrowsWithCallback,
       }}
     >
       <DndContext

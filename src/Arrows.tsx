@@ -1,4 +1,4 @@
-import { Fragment, useRef } from 'react';
+import { Fragment } from 'react';
 
 import { useChessboardContext } from './ChessboardProvider';
 import { getRelativeCoords } from './utils';
@@ -18,10 +18,7 @@ export function Arrows({ boardWidth, boardHeight }: Props) {
     boardOrientation,
     newArrowStartSquare,
     newArrowOverSquare,
-    onArrowsChange,
   } = useChessboardContext();
-
-  const prevArrowsRef = useRef<typeof arrowsForCallback>([]);
 
   if (!boardWidth) return null;
 
@@ -69,24 +66,6 @@ export function Arrows({ boardWidth, boardHeight }: Props) {
   }
 
   const arrowsToDraw = Array.from(byKey.values());
-
-  // Filter out engine + currently drawing
-  const arrowsForCallback = arrowsToDraw.filter((arrow) => {
-    const isEngine = arrow.color === 'engine';
-    const isCurrentlyDrawing =
-      currentlyDrawingArrow &&
-      arrow.startSquare === currentlyDrawingArrow.startSquare &&
-      arrow.endSquare === currentlyDrawingArrow.endSquare;
-    return !isEngine && !isCurrentlyDrawing;
-  });
-
-  const prevJSON = JSON.stringify(prevArrowsRef.current);
-  const nextJSON = JSON.stringify(arrowsForCallback);
-
-  if (prevJSON !== nextJSON) {
-    prevArrowsRef.current = arrowsForCallback;
-    onArrowsChange?.(arrowsForCallback);
-  }
 
   // ---------------------------------------------------------------------------
   // 3 · Render
