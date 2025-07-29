@@ -5348,9 +5348,11 @@ function ChessboardProvider({ children, options, }) {
         // Only update externalArrows if it actually changed
         if (JSON.stringify(newExternal) !== JSON.stringify(externalArrows)) {
             setExternalArrows(newExternal);
+            setInternalArrows([]);
         }
-        // Always update engineArrows — it's internal only
-        setEngineArrows(newEngine);
+        if (JSON.stringify(newEngine) !== JSON.stringify(engineArrows)) {
+            setEngineArrows(newEngine);
+        }
     }, [arrows]);
     // if the arrows change, call the onArrowsChange callback
     React.useEffect(() => {

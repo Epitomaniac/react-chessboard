@@ -545,6 +545,7 @@ export function ChessboardProvider({
     // Only update externalArrows if it actually changed
     if (JSON.stringify(newExternal) !== JSON.stringify(externalArrows)) {
       setExternalArrows(newExternal);
+      setInternalArrows([]);
     }
 
     if (JSON.stringify(newEngine) !== JSON.stringify(engineArrows)) {
