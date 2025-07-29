@@ -547,8 +547,9 @@ export function ChessboardProvider({
       setExternalArrows(newExternal);
     }
 
-    // Always update engineArrows — it's internal only
-    setEngineArrows(newEngine);
+    if (JSON.stringify(newEngine) !== JSON.stringify(engineArrows)) {
+      setEngineArrows(newEngine);
+    }
   }, [arrows]);
 
   // if the arrows change, call the onArrowsChange callback
