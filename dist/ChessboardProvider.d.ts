@@ -38,6 +38,7 @@ type ContextType = {
     onSquareClick: ChessboardOptions['onSquareClick'];
     onSquareRightClick: ChessboardOptions['onSquareRightClick'];
     onPromotionPieceSelect: ChessboardOptions['onPromotionPieceSelect'];
+    onArrowsChange: ChessboardOptions['onArrowsChange'];
     squareRenderer: ChessboardOptions['squareRenderer'];
     board: SquareDataType[][];
     isWrapped: boolean;

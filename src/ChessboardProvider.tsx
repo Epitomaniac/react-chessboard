@@ -108,6 +108,7 @@ type ContextType = {
   onSquareClick: ChessboardOptions['onSquareClick'];
   onSquareRightClick: ChessboardOptions['onSquareRightClick'];
   onPromotionPieceSelect: ChessboardOptions['onPromotionPieceSelect'];
+  onArrowsChange: ChessboardOptions['onArrowsChange'];
   squareRenderer: ChessboardOptions['squareRenderer'];
 
   // internal state
@@ -323,7 +324,7 @@ export function ChessboardProvider({
 
   // if the position changes, we need to recreate the pieces array
   useEffect(() => {
-    clearArrowsWithoutCallback();
+    clearArrows();
     const newPosition =
       typeof positionFen === 'string'
         ? fenStringToPositionObject(positionFen)
@@ -545,35 +546,12 @@ export function ChessboardProvider({
     // Only update externalArrows if it actually changed
     if (JSON.stringify(newExternal) !== JSON.stringify(externalArrows)) {
       setExternalArrows(newExternal);
-      setInternalArrows([]);
     }
 
     if (JSON.stringify(newEngine) !== JSON.stringify(engineArrows)) {
       setEngineArrows(newEngine);
     }
   }, [arrows]);
-
-  // if the arrows change, call the onArrowsChange callback
-  useEffect(() => {
-    if (suppressArrowChangeRef.current) return;
-    onArrowsChange?.([...externalArrows, ...internalArrows]);
-  }, [externalArrows, internalArrows]);
-
-  // so that clearing arrows on position change does not run onArrowsChange callback
-  const suppressArrowChangeRef = useRef(false);
-  function clearArrowsWithoutCallback() {
-    suppressArrowChangeRef.current = true;
-
-    setInternalArrows([]);
-    setExternalArrows([]);
-    setNewArrowStartSquare(null);
-    setNewArrowOverSquare(null);
-
-    // Turn off suppression after state flush
-    setTimeout(() => {
-      suppressArrowChangeRef.current = false;
-    }, 10);
-  }
 
   function clearArrows() {
     setInternalArrows([]);
@@ -850,6 +828,7 @@ export function ChessboardProvider({
         onSquareClick,
         onSquareRightClick,
         onPromotionPieceSelect,
+        onArrowsChange,
         squareRenderer,
 
         // internal state

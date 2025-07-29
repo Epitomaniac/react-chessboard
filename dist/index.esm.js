@@ -5186,7 +5186,7 @@ function ChessboardProvider({ children, options, }) {
     const animationTimeoutRef = useRef(null);
     // if the position changes, we need to recreate the pieces array
     useEffect(() => {
-        clearArrowsWithoutCallback();
+        clearArrows();
         const newPosition = typeof positionFen === 'string'
             ? fenStringToPositionObject(positionFen)
             : positionFen;
@@ -5346,31 +5346,11 @@ function ChessboardProvider({ children, options, }) {
         // Only update externalArrows if it actually changed
         if (JSON.stringify(newExternal) !== JSON.stringify(externalArrows)) {
             setExternalArrows(newExternal);
-            setInternalArrows([]);
         }
         if (JSON.stringify(newEngine) !== JSON.stringify(engineArrows)) {
             setEngineArrows(newEngine);
         }
     }, [arrows]);
-    // if the arrows change, call the onArrowsChange callback
-    useEffect(() => {
-        if (suppressArrowChangeRef.current)
-            return;
-        onArrowsChange?.([...externalArrows, ...internalArrows]);
-    }, [externalArrows, internalArrows]);
-    // so that clearing arrows on position change does not run onArrowsChange callback
-    const suppressArrowChangeRef = useRef(false);
-    function clearArrowsWithoutCallback() {
-        suppressArrowChangeRef.current = true;
-        setInternalArrows([]);
-        setExternalArrows([]);
-        setNewArrowStartSquare(null);
-        setNewArrowOverSquare(null);
-        // Turn off suppression after state flush
-        setTimeout(() => {
-            suppressArrowChangeRef.current = false;
-        }, 10);
-    }
     function clearArrows() {
         setInternalArrows([]);
         setExternalArrows([]);
@@ -5560,6 +5540,7 @@ function ChessboardProvider({ children, options, }) {
             onSquareClick,
             onSquareRightClick,
             onPromotionPieceSelect,
+            onArrowsChange,
             squareRenderer,
             // internal state
             board,
@@ -5580,7 +5561,8 @@ function ChessboardProvider({ children, options, }) {
 }
 
 function Arrows({ boardWidth, boardHeight }) {
-    const { id, externalArrows, internalArrows, engineArrows, arrowOptions, boardOrientation, newArrowStartSquare, newArrowOverSquare, } = useChessboardContext();
+    const { id, externalArrows, internalArrows, engineArrows, arrowOptions, boardOrientation, newArrowStartSquare, newArrowOverSquare, onArrowsChange, } = useChessboardContext();
+    const prevArrowsRef = useRef([]);
     if (!boardWidth)
         return null;
     // ---------------------------------------------------------------------------
@@ -5614,6 +5596,20 @@ function Arrows({ boardWidth, boardHeight }) {
         });
     }
     const arrowsToDraw = Array.from(byKey.values());
+    // Filter out engine + currently drawing
+    const arrowsForCallback = arrowsToDraw.filter((arrow) => {
+        const isEngine = arrow.color === 'engine';
+        const isCurrentlyDrawing = currentlyDrawingArrow &&
+            arrow.startSquare === currentlyDrawingArrow.startSquare &&
+            arrow.endSquare === currentlyDrawingArrow.endSquare;
+        return !isEngine && !isCurrentlyDrawing;
+    });
+    const prevJSON = JSON.stringify(prevArrowsRef.current);
+    const nextJSON = JSON.stringify(arrowsForCallback);
+    if (prevJSON !== nextJSON) {
+        prevArrowsRef.current = arrowsForCallback;
+        onArrowsChange?.(arrowsForCallback);
+    }
     // ---------------------------------------------------------------------------
     // 3 · Render
     // ---------------------------------------------------------------------------
