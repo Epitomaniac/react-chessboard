@@ -313,7 +313,7 @@ export function ChessboardProvider({
   const [internalArrows, setInternalArrows] = useState<Arrow[]>([]);
   const [externalArrows, setExternalArrows] = useState<Arrow[]>([]);
   const [engineArrows, setEngineArrows] = useState<Arrow[]>([]);
-  const [arrowDrawn, setArrowDrawn] = useState(false);
+  const [arrowTriggerCounter, setArrowTriggerCounter] = useState<number>(0);
 
   // position we are animating to, if a new position comes in before the animation completes, we will use this to set the new position
   const [waitingForAnimationPosition, setWaitingForAnimationPosition] =
@@ -554,8 +554,11 @@ export function ChessboardProvider({
   }, [arrows]);
 
   useEffect(() => {
-    onArrowsChange?.([...internalArrows, ...externalArrows]);
-  }, [arrowDrawn]);
+    if (arrowTriggerCounter > 0) {
+      console.log('run');
+      onArrowsChange?.([...internalArrows, ...externalArrows]);
+    }
+  }, [arrowTriggerCounter]);
 
   function clearArrows() {
     setInternalArrows([]);
@@ -569,7 +572,7 @@ export function ChessboardProvider({
     setExternalArrows([]);
     setNewArrowStartSquare(null);
     setNewArrowOverSquare(null);
-    setArrowDrawn((prev) => !prev);
+    setArrowTriggerCounter((prev) => prev + 1);
   }
 
   const drawArrow = useCallback(
@@ -626,7 +629,7 @@ export function ChessboardProvider({
         );
         setNewArrowStartSquare(null);
         setNewArrowOverSquare(null);
-        setArrowDrawn((prev) => !prev);
+        setArrowTriggerCounter((prev) => prev + 1);
         return;
       }
 
@@ -662,11 +665,11 @@ export function ChessboardProvider({
             color: arrowColor,
           },
         ]);
+        setArrowTriggerCounter((prev) => prev + 1);
       }
 
       setNewArrowStartSquare(null);
       setNewArrowOverSquare(null);
-      setArrowDrawn((prev) => !prev);
     },
     [
       allowDrawingArrows,
