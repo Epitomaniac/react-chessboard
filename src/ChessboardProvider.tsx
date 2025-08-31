@@ -555,7 +555,6 @@ export function ChessboardProvider({
 
   useEffect(() => {
     if (arrowTriggerCounter > 0) {
-      console.log('run');
       onArrowsChange?.([...internalArrows, ...externalArrows]);
     }
   }, [arrowTriggerCounter]);

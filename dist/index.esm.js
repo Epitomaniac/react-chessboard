@@ -5180,7 +5180,7 @@ function ChessboardProvider({ children, options, }) {
     const [internalArrows, setInternalArrows] = useState([]);
     const [externalArrows, setExternalArrows] = useState([]);
     const [engineArrows, setEngineArrows] = useState([]);
-    const [arrowDrawn, setArrowDrawn] = useState(false);
+    const [arrowTriggerCounter, setArrowTriggerCounter] = useState(0);
     // position we are animating to, if a new position comes in before the animation completes, we will use this to set the new position
     const [waitingForAnimationPosition, setWaitingForAnimationPosition] = useState(null);
     // the animation timeout whilst waiting for animation to complete
@@ -5353,8 +5353,10 @@ function ChessboardProvider({ children, options, }) {
         }
     }, [arrows]);
     useEffect(() => {
-        onArrowsChange?.([...internalArrows, ...externalArrows]);
-    }, [arrowDrawn]);
+        if (arrowTriggerCounter > 0) {
+            onArrowsChange?.([...internalArrows, ...externalArrows]);
+        }
+    }, [arrowTriggerCounter]);
     function clearArrows() {
         setInternalArrows([]);
         setExternalArrows([]);
@@ -5366,7 +5368,7 @@ function ChessboardProvider({ children, options, }) {
         setExternalArrows([]);
         setNewArrowStartSquare(null);
         setNewArrowOverSquare(null);
-        setArrowDrawn((prev) => !prev);
+        setArrowTriggerCounter((prev) => prev + 1);
     }
     const drawArrow = useCallback((newArrowEndSquare, modifiers) => {
         if (!allowDrawingArrows) {
@@ -5394,7 +5396,7 @@ function ChessboardProvider({ children, options, }) {
                 arrow.color === arrowColor)));
             setNewArrowStartSquare(null);
             setNewArrowOverSquare(null);
-            setArrowDrawn((prev) => !prev);
+            setArrowTriggerCounter((prev) => prev + 1);
             return;
         }
         // if the arrow exists with a different color, overwrite it
@@ -5414,10 +5416,10 @@ function ChessboardProvider({ children, options, }) {
                     color: arrowColor,
                 },
             ]);
+            setArrowTriggerCounter((prev) => prev + 1);
         }
         setNewArrowStartSquare(null);
         setNewArrowOverSquare(null);
-        setArrowDrawn((prev) => !prev);
     }, [
         allowDrawingArrows,
         externalArrows,
